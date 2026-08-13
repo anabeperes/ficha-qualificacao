@@ -17,7 +17,18 @@ Blocos condicionais:
 
 - **Cenário** alterna entre *tem produto* e *não tem produto*
 - **Tráfego** alterna entre *pago*, *orgânico* e *ambos*
+- **Red flags** revela quem participa da decisão quando há mais de um decisor,
+  e o que o lead está esperando quando ele não quer começar agora
 - **Resultado da call** alterna entre *qualificado* e *desqualificado*
+
+## Red flags
+
+A seção 7 captura os três sinais que costumam derrubar a call do closer:
+decisão compartilhada, falta de tempo e falta de urgência.
+
+As respostas preocupantes acendem em vermelho na tela, e o texto copiado
+ganha uma linha `RED FLAGS:` resumindo só o que foi sinalizado — para o closer
+bater o olho e já entrar na call sabendo.
 
 Dois trechos de script se reescrevem sozinhos conforme os campos são preenchidos
 (a pergunta de aprofundamento da motivação e a pergunta de investimento, que usa

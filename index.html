@@ -12,6 +12,7 @@
     --field:#1B1B18; --field-hover:#2B2B27;
     --text:#EFEEE8; --muted:#A5A39A; --hint:#8A887F;
     --accent:#6FB0E8; --accent-bg:#16293A; --accent-border:#33587D;
+    --danger:#E8836F; --danger-bg:#3A1E18; --danger-border:#7D3A2E;
     --radius:8px;
   }
   *{box-sizing:border-box}
@@ -46,6 +47,11 @@
   button:active{transform:scale(0.98)}
   button:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
   .seg button.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border);font-weight:600}
+  .seg button.on.bad{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-border)}
+  .n.warn{background:var(--danger-bg);color:var(--danger)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}
+  .chips button{font-size:13px;padding:7px 12px}
+  .chips button.on{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-border);font-weight:600}
   .script{background:var(--bg);border-radius:var(--radius);padding:10px 12px;font-size:13px;
     color:var(--muted);font-style:italic;margin:8px 0 2px}
   .badge{font-size:11px;color:var(--hint);border:1px solid var(--border);border-radius:var(--radius);
@@ -95,6 +101,11 @@
 
   <div id="g-tem">
     <label for="f-prod">Produto</label><input id="f-prod" placeholder="Nome e formato (curso, mentoria…)">
+    <label>Está rodando hoje?</label>
+    <div class="seg" role="group" aria-label="Status do produto">
+      <button type="button" id="b-roda" class="on" onclick="setRoda(true)">✓ Rodando</button>
+      <button type="button" id="b-nroda" onclick="setRoda(false)">Parado</button>
+    </div>
     <div class="grid2">
       <div><label for="f-preco">Preço</label><input id="f-preco" placeholder="R$ 497"></div>
       <div><label for="f-fat">Faturamento/mês</label><input id="f-fat" placeholder="R$ 10 mil"></div>
@@ -180,7 +191,52 @@
 </div>
 
 <div class="sec">
-  <div class="h"><span class="n">7</span><p class="t">Resultado da call</p></div>
+  <div class="h"><span class="n warn">7</span><p class="t">Red flags</p></div>
+  <p class="hint">O que faz o closer perder a call se passar batido. Marque o que aparecer.</p>
+
+  <label>Tem mais alguém na decisão?</label>
+  <div class="seg" role="group" aria-label="Outro decisor">
+    <button type="button" id="b-dec-sim" onclick="setDec(true)">Sim</button>
+    <button type="button" id="b-dec-nao" onclick="setDec(false)">Decide sozinho</button>
+  </div>
+  <div id="g-dec" class="hidden">
+    <p class="hint" style="margin:10px 0 0">Marque todos que pesam na decisão.</p>
+    <div class="chips" id="c-dec" role="group" aria-label="Quem decide junto">
+      <button type="button" data-dec="cônjuge" onclick="tog(this)">Cônjuge</button>
+      <button type="button" data-dec="sócio" onclick="tog(this)">Sócio</button>
+      <button type="button" data-dec="familiar" onclick="tog(this)">Familiar</button>
+      <button type="button" data-dec="amigo ou conhecido" onclick="tog(this)">Amigo ou conhecido</button>
+      <button type="button" data-dec="mentor ou consultor" onclick="tog(this)">Mentor ou consultor</button>
+      <button type="button" data-dec="investidor" onclick="tog(this)">Investidor</button>
+    </div>
+    <label for="f-dec-obs">Quem, especificamente</label>
+    <input id="f-dec-obs" placeholder="Nome, relação e o quanto pesa na decisão">
+  </div>
+
+  <label style="margin-top:14px">Tem tempo para executar?</label>
+  <div class="seg" role="group" aria-label="Disponibilidade de tempo">
+    <button type="button" id="b-tp-sim" onclick="setTempo(true)">Tem tempo</button>
+    <button type="button" id="b-tp-nao" onclick="setTempo(false)">Não tem</button>
+  </div>
+  <label for="f-tempo-sem">Quanto por semana</label>
+  <input id="f-tempo-sem" placeholder="10 horas, só à noite, fins de semana…">
+
+  <label style="margin-top:14px">Quando pretende começar?</label>
+  <div class="seg" role="group" aria-label="Urgência">
+    <button type="button" id="b-urg-ja" onclick="setUrg('ja')">Agora</button>
+    <button type="button" id="b-urg-dep" onclick="setUrg('dep')">Depois</button>
+  </div>
+  <div id="g-urg" class="hidden">
+    <label for="f-urg-q">O que precisa acontecer antes</label>
+    <input id="f-urg-q" placeholder="Prazo, condição, o que está esperando">
+  </div>
+
+  <label for="f-flags">Outros sinais</label>
+  <textarea id="f-flags" placeholder="Tom evasivo, expectativa irreal, desconfiança…"></textarea>
+</div>
+
+<div class="sec">
+  <div class="h"><span class="n">8</span><p class="t">Resultado da call</p></div>
   <div class="seg" role="group" aria-label="Resultado">
     <button type="button" id="b-qual" onclick="setRes('q')">✓ Qualificado</button>
     <button type="button" id="b-desq" onclick="setRes('d')">→ Desqualificado</button>
@@ -205,10 +261,17 @@
 
 </div>
 <script>
-var temProd=true,traf='pago',res='';
+var temProd=true,traf='pago',res='',roda=true,dec=null,tempo=null,urg='';
 function show(id,on){document.getElementById(id).classList.toggle('hidden',!on)}
 function seg(id,on){document.getElementById(id).classList.toggle('on',on)}
+function segb(id,on){var e=document.getElementById(id);e.classList.toggle('on',on);e.classList.toggle('bad',on)}
+function tog(b){b.classList.toggle('on')}
+function decs(){return Array.prototype.slice.call(document.querySelectorAll('#c-dec button.on')).map(function(b){return b.getAttribute('data-dec')}).join(', ')}
 function setCen(t){temProd=t;seg('b-tem',t);seg('b-ntem',!t);show('g-tem',t);show('g-ntem',!t)}
+function setRoda(t){roda=t;seg('b-roda',t);seg('b-nroda',!t)}
+function setDec(t){dec=t;segb('b-dec-sim',t);seg('b-dec-nao',!t);show('g-dec',t)}
+function setTempo(t){tempo=t;seg('b-tp-sim',t);segb('b-tp-nao',!t)}
+function setUrg(u){urg=u;seg('b-urg-ja',u==='ja');segb('b-urg-dep',u==='dep');show('g-urg',u==='dep')}
 function setTraf(t){traf=t;seg('b-pago',t!=='org');seg('b-org',t!=='pago');seg('b-ambos',t==='ambos');show('g-pago',t!=='org');show('g-org',t!=='pago')}
 function setRes(r){res=r;seg('b-qual',r==='q');seg('b-desq',r==='d');show('g-qual',r==='q');show('g-desq',r==='d')}
 function v(id){var e=document.getElementById(id);return e?e.value.trim():''}
@@ -226,7 +289,9 @@ function copiar(){
   t+=linha('Faixa etária','f-idade')+linha('Cidade/UF','f-cid')+linha('Onde conheceu','f-fonte')+linha('Acompanha há','f-segue');
   t+='\nCenário: '+(temProd?'Tem produto':'Não tem produto')+'\n';
   if(temProd){
-    t+=linha('Produto','f-prod')+linha('Preço','f-preco')+linha('Faturamento/mês','f-fat')+linha('Como vende','f-como')+linha('Página de vendas','f-pv');
+    t+=linha('Produto','f-prod');
+    t+='Status do produto: '+(roda?'Rodando':'Parado')+'\n';
+    t+=linha('Preço','f-preco')+linha('Faturamento/mês','f-fat')+linha('Como vende','f-como')+linha('Página de vendas','f-pv');
     t+='Tráfego: '+(traf==='ambos'?'Pago + orgânico':traf==='pago'?'Pago':'Orgânico')+'\n';
     if(traf!=='org')t+=linha('  Plataforma','f-plat')+linha('  Investimento/mês','f-inv-traf')+linha('  Custo por resultado','f-cpr')+linha('  CTR','f-ctr');
     if(traf!=='pago')t+=linha('  Canal principal','f-canal');
@@ -239,6 +304,19 @@ function copiar(){
   t+='\n'+linha('Impeditivo','f-imp')+linha('Já tentou resolver','f-tent')+linha('Já investiu em curso/mentoria','f-cursos');
   t+='\n'+linha('Meta','f-meta')+linha('Prazo','f-prazo');
   t+=linha('Disposição de investimento','f-disp');
+  var sin='';
+  if(dec!==null)sin+='Decisão: '+(dec?('compartilhada'+(decs()?' ('+decs()+')':'')):'decide sozinho')+'\n';
+  sin+=linha('  Quem','f-dec-obs');
+  if(tempo!==null)sin+='Tempo: '+(tempo?'tem':'não tem')+(v('f-tempo-sem')?', '+v('f-tempo-sem'):'')+'\n';
+  else sin+=linha('Tempo','f-tempo-sem');
+  if(urg)sin+='Urgência: '+(urg==='ja'?'quer começar agora':'quer começar depois')+(v('f-urg-q')?', '+v('f-urg-q'):'')+'\n';
+  sin+=linha('Outros sinais','f-flags');
+  if(sin)t+='\nDECISÃO, TEMPO E URGÊNCIA\n'+sin;
+  var fl=[];
+  if(dec===true)fl.push('decisão compartilhada'+(decs()?' ('+decs()+')':''));
+  if(tempo===false)fl.push('sem tempo para executar');
+  if(urg==='dep')fl.push('não quer começar agora');
+  if(fl.length)t+='\nRED FLAGS: '+fl.join('; ')+'\n';
   if(res)t+='\nResultado: '+(res==='q'?'QUALIFICADO, call: '+(v('f-agenda')||'a agendar'):'DESQUALIFICADO, curso: '+(v('f-curso')||'...'))+'\n';
   t+=linha('Obs. para o closer','f-obs');
   var o=document.getElementById('f-out');o.style.display='block';o.value=t;
@@ -250,7 +328,12 @@ function limpar(){
   if(!confirm('Limpar todos os campos?'))return;
   document.querySelectorAll('input,textarea,select').forEach(function(e){e.value=''});
   document.getElementById('f-out').style.display='none';
-  res='';seg('b-qual',false);seg('b-desq',false);show('g-qual',false);show('g-desq',false);upd();
+  res='';seg('b-qual',false);seg('b-desq',false);show('g-qual',false);show('g-desq',false);
+  dec=null;tempo=null;urg='';
+  ['b-dec-sim','b-dec-nao','b-tp-sim','b-tp-nao','b-urg-ja','b-urg-dep'].forEach(function(i){
+    document.getElementById(i).classList.remove('on','bad')});
+  document.querySelectorAll('#c-dec button').forEach(function(b){b.classList.remove('on')});
+  show('g-dec',false);show('g-urg',false);setRoda(true);upd();
 }
 upd();
 </script>

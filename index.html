@@ -141,6 +141,15 @@
       <div><label for="f-compras">Compras</label><input id="f-compras" placeholder="35"></div>
       <div></div>
     </div>
+    <label style="margin-top:14px">Tem outra ocupação?</label>
+    <div class="seg" role="group" aria-label="Outra ocupação">
+      <button type="button" id="b-ocu-sim" onclick="setOcu(true)">Sim</button>
+      <button type="button" id="b-ocu-nao" onclick="setOcu(false)">Vive só disso</button>
+    </div>
+    <div id="g-ocu" class="hidden">
+      <label for="f-ocu">Qual, e quanto toma do dia</label>
+      <input id="f-ocu" placeholder="CLT das 9 às 18h, autônomo, outro negócio…">
+    </div>
     <div class="h" style="margin-top:12px"><label for="f-equipe" style="margin:0">Equipe</label><span class="badge">opcional</span></div>
     <input id="f-equipe" placeholder="Sozinho, 1 editor, social media…">
   </div>
@@ -261,7 +270,7 @@
 
 </div>
 <script>
-var temProd=true,traf='pago',res='',roda=true,dec=null,tempo=null,urg='';
+var temProd=true,traf='pago',res='',roda=true,ocu=null,dec=null,tempo=null,urg='';
 function show(id,on){document.getElementById(id).classList.toggle('hidden',!on)}
 function seg(id,on){document.getElementById(id).classList.toggle('on',on)}
 function segb(id,on){var e=document.getElementById(id);e.classList.toggle('on',on);e.classList.toggle('bad',on)}
@@ -269,6 +278,7 @@ function tog(b){b.classList.toggle('on')}
 function decs(){return Array.prototype.slice.call(document.querySelectorAll('#c-dec button.on')).map(function(b){return b.getAttribute('data-dec')}).join(', ')}
 function setCen(t){temProd=t;seg('b-tem',t);seg('b-ntem',!t);show('g-tem',t);show('g-ntem',!t)}
 function setRoda(t){roda=t;seg('b-roda',t);seg('b-nroda',!t)}
+function setOcu(t){ocu=t;seg('b-ocu-sim',t);seg('b-ocu-nao',!t);show('g-ocu',t)}
 function setDec(t){dec=t;segb('b-dec-sim',t);seg('b-dec-nao',!t);show('g-dec',t)}
 function setTempo(t){tempo=t;seg('b-tp-sim',t);segb('b-tp-nao',!t)}
 function setUrg(u){urg=u;seg('b-urg-ja',u==='ja');segb('b-urg-dep',u==='dep');show('g-urg',u==='dep')}
@@ -296,6 +306,7 @@ function copiar(){
     if(traf!=='org')t+=linha('  Plataforma','f-plat')+linha('  Investimento/mês','f-inv-traf')+linha('  Custo por resultado','f-cpr')+linha('  CTR','f-ctr');
     if(traf!=='pago')t+=linha('  Canal principal','f-canal');
     t+=linha('  Visitas na página','f-visitas')+linha('  Checkouts iniciados','f-checkouts')+linha('  Compras','f-compras');
+    if(ocu!==null)t+='Outra ocupação: '+(ocu?(v('f-ocu')||'sim'):'não, vive só disso')+'\n';
     t+=linha('Equipe','f-equipe');
   } else {
     t+=linha('Ideia de produto','f-ideia')+linha('Público ideal','f-pub')+linha('Audiência','f-aud')+linha('Já vendeu/testou','f-val')+linha('Ocupação/renda','f-renda')+linha('Experiência tráfego/vendas','f-exp');
@@ -329,11 +340,11 @@ function limpar(){
   document.querySelectorAll('input,textarea,select').forEach(function(e){e.value=''});
   document.getElementById('f-out').style.display='none';
   res='';seg('b-qual',false);seg('b-desq',false);show('g-qual',false);show('g-desq',false);
-  dec=null;tempo=null;urg='';
-  ['b-dec-sim','b-dec-nao','b-tp-sim','b-tp-nao','b-urg-ja','b-urg-dep'].forEach(function(i){
+  ocu=null;dec=null;tempo=null;urg='';
+  ['b-ocu-sim','b-ocu-nao','b-dec-sim','b-dec-nao','b-tp-sim','b-tp-nao','b-urg-ja','b-urg-dep'].forEach(function(i){
     document.getElementById(i).classList.remove('on','bad')});
   document.querySelectorAll('#c-dec button').forEach(function(b){b.classList.remove('on')});
-  show('g-dec',false);show('g-urg',false);setRoda(true);upd();
+  show('g-ocu',false);show('g-dec',false);show('g-urg',false);setRoda(true);upd();
 }
 setCen(temProd);setTraf(traf);setRoda(roda);upd();
 </script>

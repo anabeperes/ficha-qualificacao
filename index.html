@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ficha de qualificação SDR</title>
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#1A1A17; --card:#232320; --border:#34342E; --border-strong:#4A4A42;
+    --field:#1B1B18; --field-hover:#2B2B27;
+    --text:#EFEEE8; --muted:#A5A39A; --hint:#8A887F;
+    --accent:#6FB0E8; --accent-bg:#16293A; --accent-border:#33587D;
+    --radius:8px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto;padding:24px 16px 48px}
+  header{margin:0 0 20px}
+  h1{font-size:20px;font-weight:600;margin:0 0 4px}
+  .sub{font-size:13px;color:var(--muted);margin:0}
+  .sec{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0 0 12px}
+  .sec.star{border-color:var(--accent-border)}
+  .h{display:flex;align-items:center;gap:8px;margin:0 0 4px}
+  .n{width:22px;height:22px;border-radius:50%;background:var(--accent-bg);color:var(--accent);
+    font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none}
+  .t{font-size:15px;font-weight:600;margin:0}
+  .hint{font-size:12px;color:var(--hint);margin:0 0 10px}
+  label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+  input,select,textarea{width:100%;font:inherit;color:var(--text);background:var(--field);
+    border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px}
+  input::placeholder,textarea::placeholder{color:var(--hint)}
+  input:hover,select:hover,textarea:hover{border-color:var(--border-strong)}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-bg)}
+  textarea{min-height:56px;resize:vertical}
+  .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .seg{display:flex;gap:8px;margin:8px 0 4px}
+  .seg button{flex:1;font-size:13px;padding:8px 4px}
+  button{font:inherit;font-size:14px;color:var(--text);background:var(--field);
+    border:1px solid var(--border-strong);border-radius:var(--radius);padding:9px 14px;cursor:pointer}
+  button:hover{background:var(--field-hover)}
+  button:active{transform:scale(0.98)}
+  button:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+  .seg button.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border);font-weight:600}
+  .script{background:var(--bg);border-radius:var(--radius);padding:10px 12px;font-size:13px;
+    color:var(--muted);font-style:italic;margin:8px 0 2px}
+  .badge{font-size:11px;color:var(--hint);border:1px solid var(--border);border-radius:var(--radius);
+    padding:1px 8px;margin-left:auto;flex:none}
+  .actions{display:flex;gap:10px;margin:4px 0 8px}
+  .actions .primary{flex:1;background:var(--text);color:var(--bg);border-color:var(--text);font-weight:600}
+  .actions .primary:hover{background:#D8D7D1}
+  #f-out{display:none;min-height:160px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;margin-top:4px}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Ficha de qualificação SDR</h1>
+  <p class="sub">Preencha durante a call. A ordem segue o roteiro: situação → motivação → impeditivo → objetivo → investimento → resultado.</p>
+</header>
+
+<div class="sec">
+  <div class="h"><span class="n">1</span><p class="t">Lead</p></div>
+  <p class="hint">Confirme o que já veio do formulário, não pergunte de novo.</p>
+  <label for="f-nome">Nome</label><input id="f-nome" placeholder="Maria Souza">
+  <label for="f-nicho">Nicho</label><input id="f-nicho" placeholder="Emagrecimento, finanças, artesanato…">
+  <label for="f-tempo">Tempo no digital</label><input id="f-tempo" placeholder="2 anos, começando agora…">
+</div>
+
+<div class="sec">
+  <div class="h"><span class="n">2</span><p class="t">Perfil, insumo para tráfego</p></div>
+  <p class="hint">Confirmação rápida. Pule o que já veio do formulário da página.</p>
+  <div class="grid2">
+    <div><label for="f-idade">Faixa etária</label><select id="f-idade"><option value="">...</option><option>18–24</option><option>25–34</option><option>35–44</option><option>45–54</option><option>55+</option></select></div>
+    <div><label for="f-cid">Cidade / UF</label><input id="f-cid" placeholder="Brasília / DF"></div>
+  </div>
+  <label for="f-fonte">Onde conheceu o Ladeirinha</label>
+  <select id="f-fonte"><option value="">...</option><option>Instagram</option><option>YouTube</option><option>TikTok</option><option>Anúncio</option><option>Indicação</option><option>Outro</option></select>
+  <label for="f-segue">Acompanha há quanto tempo</label>
+  <select id="f-segue"><option value="">...</option><option>Menos de 1 mês</option><option>1 a 6 meses</option><option>6 a 12 meses</option><option>Mais de 1 ano</option></select>
+</div>
+
+<div class="sec">
+  <div class="h"><span class="n">3</span><p class="t">Cenário</p></div>
+  <div class="seg" role="group" aria-label="Situação do lead">
+    <button type="button" id="b-tem" class="on" onclick="setCen(true)">✓ Tem produto</button>
+    <button type="button" id="b-ntem" onclick="setCen(false)">Não tem produto</button>
+  </div>
+
+  <div id="g-tem">
+    <label for="f-prod">Produto</label><input id="f-prod" placeholder="Nome e formato (curso, mentoria…)">
+    <div class="grid2">
+      <div><label for="f-preco">Preço</label><input id="f-preco" placeholder="R$ 497"></div>
+      <div><label for="f-fat">Faturamento/mês</label><input id="f-fat" placeholder="R$ 10 mil"></div>
+    </div>
+    <label for="f-como">Como vende hoje</label><input id="f-como" placeholder="Perpétuo, lançamento, direct…">
+    <label for="f-pv">Página de vendas (link ou "não tem")</label><input id="f-pv" placeholder="https://…">
+    <label>Tráfego</label>
+    <div class="seg" role="group" aria-label="Tipo de tráfego">
+      <button type="button" id="b-pago" class="on" onclick="setTraf('pago')">Pago</button>
+      <button type="button" id="b-org" onclick="setTraf('org')">Orgânico</button>
+      <button type="button" id="b-ambos" onclick="setTraf('ambos')">Ambos</button>
+    </div>
+    <div id="g-pago">
+      <div class="grid2">
+        <div><label for="f-plat">Plataforma</label><input id="f-plat" placeholder="Meta, Google…"></div>
+        <div><label for="f-inv-traf">Investimento/mês</label><input id="f-inv-traf" placeholder="R$ 3 mil"></div>
+      </div>
+      <div class="grid2">
+        <div><label for="f-cpr">Custo por resultado</label><input id="f-cpr" placeholder="R$ 25"></div>
+        <div><label for="f-ctr">CTR</label><input id="f-ctr" placeholder="1,8%"></div>
+      </div>
+    </div>
+    <div id="g-org">
+      <label for="f-canal">Canal principal</label><input id="f-canal" placeholder="Instagram, YouTube, TikTok…">
+    </div>
+    <label style="margin-top:14px">Funil no último mês</label>
+    <p class="hint" style="margin:2px 0 6px">Se o lead não souber de cabeça, anote "não sabe". Também é informação.</p>
+    <div class="grid2">
+      <div><label for="f-visitas">Visitas na página</label><input id="f-visitas" placeholder="3.500"></div>
+      <div><label for="f-checkouts">Checkouts iniciados</label><input id="f-checkouts" placeholder="120"></div>
+    </div>
+    <div class="grid2">
+      <div><label for="f-compras">Compras</label><input id="f-compras" placeholder="35"></div>
+      <div></div>
+    </div>
+    <div class="h" style="margin-top:12px"><label for="f-equipe" style="margin:0">Equipe</label><span class="badge">opcional</span></div>
+    <input id="f-equipe" placeholder="Sozinho, 1 editor, social media…">
+  </div>
+
+  <div id="g-ntem" class="hidden">
+    <label for="f-ideia">Ideia de produto</label><input id="f-ideia" placeholder="O que quer vender e em que formato">
+    <label for="f-pub">Público ideal</label><input id="f-pub" placeholder="Para quem seria">
+    <label for="f-aud">Audiência</label><input id="f-aud" placeholder="Tem? Onde? Quantos seguidores?">
+    <label for="f-val">Já vendeu algo ou testou a ideia?</label><input id="f-val" placeholder="Vendas avulsas, teste com conhecidos, nada ainda…">
+    <label for="f-renda">Ocupação / fonte de renda atual</label><input id="f-renda" placeholder="CLT, autônomo, área de atuação">
+    <label for="f-exp">Experiência com tráfego / vendas</label><input id="f-exp" placeholder="Já anunciou? Já vendeu online?">
+  </div>
+</div>
+
+<div class="sec">
+  <div class="h"><span class="n">4</span><p class="t">Motivação</p></div>
+  <p class="hint">✍ Anote as palavras exatas do lead. O closer vai usar na venda.</p>
+  <label for="f-mot">O que te motivou a buscar isso?</label>
+  <textarea id="f-mot" placeholder="Ex.: dar uma vida melhor pros meus filhos"></textarea>
+  <div class="script" id="s-mot">"Quando você diz isso, o que exatamente quer dizer?"</div>
+  <label for="f-mot2">Aprofundamento (o que isso significa na prática)</label>
+  <textarea id="f-mot2" placeholder="Resposta concreta: escola dos filhos, sair do CLT…"></textarea>
+</div>
+
+<div class="sec">
+  <div class="h"><span class="n">5</span><p class="t">Impeditivo</p></div>
+  <p class="hint">É daqui que sai a solução que o closer apresenta.</p>
+  <label for="f-imp">O que te impede hoje de chegar lá?</label>
+  <textarea id="f-imp" placeholder="A maior dor, nas palavras do lead"></textarea>
+  <label for="f-tent">Já tentou resolver? Como?</label><input id="f-tent" placeholder="O que já testou e por que não funcionou">
+  <label for="f-cursos">Já investiu em curso ou mentoria? Quanto? Como foi?</label><input id="f-cursos" placeholder="Melhor preditor de compra high ticket">
+</div>
+
+<div class="sec">
+  <div class="h"><span class="n">6</span><p class="t">Objetivo</p></div>
+  <p class="hint">Exija um número. É ele que ancora a pergunta de investimento.</p>
+  <div class="grid2">
+    <div><label for="f-meta">Meta de faturamento</label><input id="f-meta" placeholder="R$ 30 mil/mês"></div>
+    <div><label for="f-prazo">Prazo</label><select id="f-prazo"><option value="">...</option><option>6 meses</option><option>12 meses</option></select></div>
+  </div>
+</div>
+
+<div class="sec star">
+  <div class="h"><span class="n">★</span><p class="t">Investimento. A pergunta determinante</p></div>
+  <div class="script" id="s-inv">"Fulano, para chegar nesse resultado, quanto você estaria disposto a investir numa mentoria?"</div>
+  <label for="f-disp">Disposição de investimento</label>
+  <input id="f-disp" placeholder="Valor ou faixa que o lead falou">
+</div>
+
+<div class="sec">
+  <div class="h"><span class="n">7</span><p class="t">Resultado da call</p></div>
+  <div class="seg" role="group" aria-label="Resultado">
+    <button type="button" id="b-qual" onclick="setRes('q')">✓ Qualificado</button>
+    <button type="button" id="b-desq" onclick="setRes('d')">→ Desqualificado</button>
+  </div>
+  <div id="g-qual" class="hidden">
+    <label for="f-agenda">Call com especialista agendada para</label>
+    <input id="f-agenda" placeholder="Ter 04/08, 15h">
+  </div>
+  <div id="g-desq" class="hidden">
+    <label for="f-curso">Curso indicado</label>
+    <input id="f-curso" placeholder="Qual curso e por quê">
+  </div>
+  <label for="f-obs">Observações para o closer</label>
+  <textarea id="f-obs" placeholder="Objeções, contexto de família, tom da conversa…"></textarea>
+</div>
+
+<div class="actions">
+  <button type="button" class="primary" onclick="copiar()"><span id="cp-lbl">Copiar como texto</span></button>
+  <button type="button" onclick="limpar()">Limpar</button>
+</div>
+<textarea id="f-out" aria-label="Texto gerado"></textarea>
+
+</div>
+<script>
+var temProd=true,traf='pago',res='';
+function show(id,on){document.getElementById(id).classList.toggle('hidden',!on)}
+function seg(id,on){document.getElementById(id).classList.toggle('on',on)}
+function setCen(t){temProd=t;seg('b-tem',t);seg('b-ntem',!t);show('g-tem',t);show('g-ntem',!t)}
+function setTraf(t){traf=t;seg('b-pago',t!=='org');seg('b-org',t!=='pago');seg('b-ambos',t==='ambos');show('g-pago',t!=='org');show('g-org',t!=='pago')}
+function setRes(r){res=r;seg('b-qual',r==='q');seg('b-desq',r==='d');show('g-qual',r==='q');show('g-desq',r==='d')}
+function v(id){var e=document.getElementById(id);return e?e.value.trim():''}
+function upd(){
+  var n=v('f-nome')||'Fulano',m=v('f-meta'),mo=v('f-mot');
+  document.getElementById('s-inv').textContent='"'+n+', para chegar '+(m?'em '+m:'nesse resultado')+', quanto você estaria disposto a investir numa mentoria?"';
+  var mt=mo?(mo.length>60?mo.slice(0,60)+'…':mo):'isso';
+  document.getElementById('s-mot').textContent='"Quando você diz “'+mt+'”, o que exatamente quer dizer?"';
+}
+['f-nome','f-meta','f-mot'].forEach(function(i){document.getElementById(i).addEventListener('input',upd)});
+function linha(rot,id){var x=v(id);return x?rot+': '+x+'\n':''}
+function copiar(){
+  var t='FICHA DE QUALIFICAÇÃO SDR\n\n';
+  t+=linha('Lead','f-nome')+linha('Nicho','f-nicho')+linha('Tempo no digital','f-tempo');
+  t+=linha('Faixa etária','f-idade')+linha('Cidade/UF','f-cid')+linha('Onde conheceu','f-fonte')+linha('Acompanha há','f-segue');
+  t+='\nCenário: '+(temProd?'Tem produto':'Não tem produto')+'\n';
+  if(temProd){
+    t+=linha('Produto','f-prod')+linha('Preço','f-preco')+linha('Faturamento/mês','f-fat')+linha('Como vende','f-como')+linha('Página de vendas','f-pv');
+    t+='Tráfego: '+(traf==='ambos'?'Pago + orgânico':traf==='pago'?'Pago':'Orgânico')+'\n';
+    if(traf!=='org')t+=linha('  Plataforma','f-plat')+linha('  Investimento/mês','f-inv-traf')+linha('  Custo por resultado','f-cpr')+linha('  CTR','f-ctr');
+    if(traf!=='pago')t+=linha('  Canal principal','f-canal');
+    t+=linha('  Visitas na página','f-visitas')+linha('  Checkouts iniciados','f-checkouts')+linha('  Compras','f-compras');
+    t+=linha('Equipe','f-equipe');
+  } else {
+    t+=linha('Ideia de produto','f-ideia')+linha('Público ideal','f-pub')+linha('Audiência','f-aud')+linha('Já vendeu/testou','f-val')+linha('Ocupação/renda','f-renda')+linha('Experiência tráfego/vendas','f-exp');
+  }
+  t+='\n'+linha('Motivação','f-mot')+linha('Na prática','f-mot2');
+  t+='\n'+linha('Impeditivo','f-imp')+linha('Já tentou resolver','f-tent')+linha('Já investiu em curso/mentoria','f-cursos');
+  t+='\n'+linha('Meta','f-meta')+linha('Prazo','f-prazo');
+  t+=linha('Disposição de investimento','f-disp');
+  if(res)t+='\nResultado: '+(res==='q'?'QUALIFICADO, call: '+(v('f-agenda')||'a agendar'):'DESQUALIFICADO, curso: '+(v('f-curso')||'...'))+'\n';
+  t+=linha('Obs. para o closer','f-obs');
+  var o=document.getElementById('f-out');o.style.display='block';o.value=t;
+  var ok=function(){var l=document.getElementById('cp-lbl');l.textContent='Copiado ✓';setTimeout(function(){l.textContent='Copiar como texto'},1600)};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,function(){o.select()})}
+  else{o.select();try{document.execCommand('copy');ok()}catch(e){}}
+}
+function limpar(){
+  if(!confirm('Limpar todos os campos?'))return;
+  document.querySelectorAll('input,textarea,select').forEach(function(e){e.value=''});
+  document.getElementById('f-out').style.display='none';
+  res='';seg('b-qual',false);seg('b-desq',false);show('g-qual',false);show('g-desq',false);upd();
+}
+upd();
+</script>
+</body>
+</html>

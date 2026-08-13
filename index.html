@@ -78,7 +78,16 @@
   <label for="f-nome">Nome</label><input id="f-nome" placeholder="Maria Souza">
   <label for="f-email">E-mail</label><input id="f-email" type="email" inputmode="email" autocomplete="off" placeholder="maria@email.com">
   <label for="f-tel">Telefone</label><input id="f-tel" type="tel" inputmode="tel" autocomplete="off" placeholder="(61) 99999-9999">
-  <label for="f-nicho">Nicho</label><input id="f-nicho" placeholder="Emagrecimento, finanças, artesanato…">
+  <label>Nicho</label>
+  <div class="chips" id="c-nicho" role="group" aria-label="Nicho">
+    <button type="button" data-v="emagrecimento" onclick="uni(this)">Emagrecimento</button>
+    <button type="button" data-v="finanças" onclick="uni(this)">Finanças</button>
+    <button type="button" data-v="relacionamento" onclick="uni(this)">Relacionamento</button>
+    <button type="button" data-v="espiritualidade" onclick="uni(this)">Espiritualidade</button>
+    <button type="button" data-v="educação" onclick="uni(this)">Educação</button>
+    <button type="button" data-v="outro" onclick="uni(this)">Outro</button>
+  </div>
+  <input id="f-nicho" placeholder="Qual exatamente">
   <label for="f-tempo">Tempo no digital</label><input id="f-tempo" placeholder="2 anos, começando agora…">
 </div>
 
@@ -113,7 +122,15 @@
       <div><label for="f-preco">Preço</label><input id="f-preco" placeholder="R$ 497"></div>
       <div><label for="f-fat">Faturamento/mês</label><input id="f-fat" placeholder="R$ 10 mil"></div>
     </div>
-    <label for="f-como">Como vende hoje</label><input id="f-como" placeholder="Perpétuo, lançamento, direct…">
+    <label>Como vende hoje</label>
+    <div class="chips" id="c-como" role="group" aria-label="Como vende">
+      <button type="button" data-v="perpétuo" onclick="tog(this)">Perpétuo</button>
+      <button type="button" data-v="lançamento" onclick="tog(this)">Lançamento</button>
+      <button type="button" data-v="direct" onclick="tog(this)">Direct</button>
+      <button type="button" data-v="grupo de WhatsApp" onclick="tog(this)">Grupo de WhatsApp</button>
+      <button type="button" data-v="live" onclick="tog(this)">Live</button>
+    </div>
+    <input id="f-como" placeholder="Detalhe, se precisar">
     <label for="f-pv">Página de vendas (link ou "não tem")</label><input id="f-pv" placeholder="https://…">
     <label>Tráfego</label>
     <div class="seg" role="group" aria-label="Tipo de tráfego">
@@ -122,10 +139,15 @@
       <button type="button" id="b-ambos" onclick="setTraf('ambos')">Ambos</button>
     </div>
     <div id="g-pago">
-      <div class="grid2">
-        <div><label for="f-plat">Plataforma</label><input id="f-plat" placeholder="Meta, Google…"></div>
-        <div><label for="f-inv-traf">Investimento/mês</label><input id="f-inv-traf" placeholder="R$ 3 mil"></div>
+      <label>Plataforma</label>
+      <div class="chips" id="c-plat" role="group" aria-label="Plataforma de tráfego">
+        <button type="button" data-v="Meta" onclick="tog(this)">Meta</button>
+        <button type="button" data-v="Google" onclick="tog(this)">Google</button>
+        <button type="button" data-v="TikTok" onclick="tog(this)">TikTok</button>
+        <button type="button" data-v="YouTube" onclick="tog(this)">YouTube</button>
       </div>
+      <input id="f-plat" placeholder="Outra plataforma">
+      <label for="f-inv-traf">Investimento/mês</label><input id="f-inv-traf" placeholder="R$ 3 mil">
       <div class="grid2">
         <div><label for="f-cpr">Custo por resultado</label><input id="f-cpr" placeholder="R$ 25"></div>
         <div><label for="f-ctr">CTR</label><input id="f-ctr" placeholder="1,8%"></div>
@@ -198,8 +220,26 @@
   </div>
   <label for="f-imp">Nas palavras dele</label>
   <textarea id="f-imp" placeholder="A maior dor, nas palavras do lead"></textarea>
-  <label for="f-tent">Já tentou resolver? Como?</label><input id="f-tent" placeholder="O que já testou e por que não funcionou">
-  <label for="f-cursos">Já investiu em curso ou mentoria? Quanto? Como foi?</label><input id="f-cursos" placeholder="Melhor preditor de compra high ticket">
+  <label style="margin-top:14px">Já tentou resolver? Como?</label>
+  <div class="chips" id="c-tent" role="group" aria-label="Já tentou resolver">
+    <button type="button" data-v="sozinho pelo YouTube" onclick="tog(this)">Sozinho pelo YouTube</button>
+    <button type="button" data-v="comprou curso" onclick="tog(this)">Comprou curso</button>
+    <button type="button" data-v="contratou agência" onclick="tog(this)">Contratou agência</button>
+    <button type="button" data-v="contratou freela" onclick="tog(this)">Contratou freela</button>
+    <button type="button" data-v="nunca tentou" onclick="tog(this)">Nunca tentou</button>
+  </div>
+  <input id="f-tent" placeholder="O que testou e por que não funcionou">
+
+  <label style="margin-top:14px">Já investiu em curso ou mentoria? Quanto?</label>
+  <p class="hint" style="margin:2px 0 6px">Melhor preditor de compra high ticket.</p>
+  <div class="chips" id="c-cursos" role="group" aria-label="Quanto já investiu">
+    <button type="button" data-v="nunca investiu" onclick="uni(this)">Nunca</button>
+    <button type="button" data-v="até R$ 1 mil" onclick="uni(this)">Até R$ 1 mil</button>
+    <button type="button" data-v="R$ 1 a 5 mil" onclick="uni(this)">R$ 1 a 5 mil</button>
+    <button type="button" data-v="R$ 5 a 20 mil" onclick="uni(this)">R$ 5 a 20 mil</button>
+    <button type="button" data-v="mais de R$ 20 mil" onclick="uni(this)">Mais de R$ 20 mil</button>
+  </div>
+  <input id="f-cursos" placeholder="Com quem, e como foi a experiência">
 </div>
 
 <div class="sec">
@@ -214,8 +254,15 @@
 <div class="sec star">
   <div class="h"><span class="n">★</span><p class="t">Investimento. A pergunta determinante</p></div>
   <div class="script" id="s-inv">"Fulano, para chegar nesse resultado, quanto você estaria disposto a investir numa mentoria?"</div>
-  <label for="f-disp">Disposição de investimento</label>
-  <input id="f-disp" placeholder="Valor ou faixa que o lead falou">
+  <label>Disposição de investimento</label>
+  <div class="chips" id="c-disp" role="group" aria-label="Disposição de investimento">
+    <button type="button" data-v="até R$ 1 mil" onclick="uni(this)">Até R$ 1 mil</button>
+    <button type="button" data-v="R$ 1 a 5 mil" onclick="uni(this)">R$ 1 a 5 mil</button>
+    <button type="button" data-v="R$ 5 a 20 mil" onclick="uni(this)">R$ 5 a 20 mil</button>
+    <button type="button" data-v="mais de R$ 20 mil" onclick="uni(this)">Mais de R$ 20 mil</button>
+    <button type="button" data-v="não disse" onclick="uni(this)">Não disse</button>
+  </div>
+  <input id="f-disp" placeholder="Valor exato que o lead falou">
 </div>
 
 <div class="sec">
@@ -294,6 +341,10 @@ function show(id,on){document.getElementById(id).classList.toggle('hidden',!on)}
 function seg(id,on){document.getElementById(id).classList.toggle('on',on)}
 function segb(id,on){var e=document.getElementById(id);e.classList.toggle('on',on);e.classList.toggle('bad',on)}
 function tog(b){b.classList.toggle('on')}
+function uni(b){var on=b.classList.contains('on'),p=b.parentNode.children;
+  for(var i=0;i<p.length;i++)p[i].classList.remove('on');if(!on)b.classList.add('on')}
+function bloco(rot,gid,fid){var m=marc(gid),x=v(fid);
+  return (m||x)?rot+': '+[m,x].filter(Boolean).join(', ')+'\n':''}
 function marc(id){return Array.prototype.slice.call(document.querySelectorAll('#'+id+' button.on')).map(function(b){return b.getAttribute('data-v')}).join(', ')}
 function setCen(t){temProd=t;seg('b-tem',t);seg('b-ntem',!t);show('g-tem',t);show('g-ntem',!t)}
 function setRoda(t){roda=t;seg('b-roda',t);seg('b-nroda',!t)}
@@ -314,15 +365,15 @@ function upd(){
 function linha(rot,id){var x=v(id);return x?rot+': '+x+'\n':''}
 function copiar(){
   var t='FICHA DE QUALIFICAÇÃO SDR\n\n';
-  t+=linha('Lead','f-nome')+linha('E-mail','f-email')+linha('Telefone','f-tel')+linha('Nicho','f-nicho')+linha('Tempo no digital','f-tempo');
+  t+=linha('Lead','f-nome')+linha('E-mail','f-email')+linha('Telefone','f-tel')+bloco('Nicho','c-nicho','f-nicho')+linha('Tempo no digital','f-tempo');
   t+=linha('Faixa etária','f-idade')+linha('Cidade/UF','f-cid')+linha('Onde conheceu','f-fonte')+linha('Acompanha há','f-segue');
   t+='\nCenário: '+(temProd?'Tem produto':'Não tem produto')+'\n';
   if(temProd){
     t+=linha('Produto','f-prod');
     t+='Status do produto: '+(roda?'Rodando':'Parado')+'\n';
-    t+=linha('Preço','f-preco')+linha('Faturamento/mês','f-fat')+linha('Como vende','f-como')+linha('Página de vendas','f-pv');
+    t+=linha('Preço','f-preco')+linha('Faturamento/mês','f-fat')+bloco('Como vende','c-como','f-como')+linha('Página de vendas','f-pv');
     t+='Tráfego: '+(traf==='ambos'?'Pago + orgânico':traf==='pago'?'Pago':'Orgânico')+'\n';
-    if(traf!=='org')t+=linha('  Plataforma','f-plat')+linha('  Investimento/mês','f-inv-traf')+linha('  Custo por resultado','f-cpr')+linha('  CTR','f-ctr');
+    if(traf!=='org')t+=bloco('  Plataforma','c-plat','f-plat')+linha('  Investimento/mês','f-inv-traf')+linha('  Custo por resultado','f-cpr')+linha('  CTR','f-ctr');
     if(traf!=='pago')t+=linha('  Canal principal','f-canal');
     t+=linha('  Visitas na página','f-visitas')+linha('  Checkouts iniciados','f-checkouts')+linha('  Compras','f-compras');
     if(ocu!==null)t+='Outra ocupação: '+(ocu?(v('f-ocu')||'sim'):'não, vive só disso')+'\n';
@@ -331,9 +382,9 @@ function copiar(){
     t+=linha('Ideia de produto','f-ideia')+linha('Público ideal','f-pub')+linha('Audiência','f-aud')+linha('Já vendeu/testou','f-val')+linha('Ocupação/renda','f-renda')+linha('Experiência tráfego/vendas','f-exp');
   }
   t+='\n'+(marc('c-mot')?'Motivação: '+marc('c-mot')+'\n':'')+linha('  Nas palavras dele','f-mot')+linha('Na prática','f-mot2');
-  t+='\n'+(marc('c-imp')?'Impeditivo: '+marc('c-imp')+'\n':'')+linha('  Nas palavras dele','f-imp')+linha('Já tentou resolver','f-tent')+linha('Já investiu em curso/mentoria','f-cursos');
+  t+='\n'+(marc('c-imp')?'Impeditivo: '+marc('c-imp')+'\n':'')+linha('  Nas palavras dele','f-imp')+bloco('Já tentou resolver','c-tent','f-tent')+bloco('Já investiu em curso/mentoria','c-cursos','f-cursos');
   t+='\n'+linha('Meta','f-meta')+linha('Prazo','f-prazo');
-  t+=linha('Disposição de investimento','f-disp');
+  t+=bloco('Disposição de investimento','c-disp','f-disp');
   var sin='';
   if(dec!==null)sin+='Decisão: '+(dec?('compartilhada'+(marc('c-dec')?' ('+marc('c-dec')+')':'')):'decide sozinho')+'\n';
   sin+=linha('  Quem','f-dec-obs');

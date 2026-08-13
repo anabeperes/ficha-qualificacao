@@ -51,7 +51,8 @@
   .n.warn{background:var(--danger-bg);color:var(--danger)}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}
   .chips button{font-size:13px;padding:7px 12px}
-  .chips button.on{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-border);font-weight:600}
+  .chips button.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border);font-weight:600}
+  .chips.flag button.on{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-border)}
   .script{background:var(--bg);border-radius:var(--radius);padding:10px 12px;font-size:13px;
     color:var(--muted);font-style:italic;margin:8px 0 2px}
   .badge{font-size:11px;color:var(--hint);border:1px solid var(--border);border-radius:var(--radius);
@@ -75,6 +76,8 @@
   <div class="h"><span class="n">1</span><p class="t">Lead</p></div>
   <p class="hint">Confirme o que já veio do formulário, não pergunte de novo.</p>
   <label for="f-nome">Nome</label><input id="f-nome" placeholder="Maria Souza">
+  <label for="f-email">E-mail</label><input id="f-email" type="email" inputmode="email" autocomplete="off" placeholder="maria@email.com">
+  <label for="f-tel">Telefone</label><input id="f-tel" type="tel" inputmode="tel" autocomplete="off" placeholder="(61) 99999-9999">
   <label for="f-nicho">Nicho</label><input id="f-nicho" placeholder="Emagrecimento, finanças, artesanato…">
   <label for="f-tempo">Tempo no digital</label><input id="f-tempo" placeholder="2 anos, começando agora…">
 </div>
@@ -167,7 +170,15 @@
 <div class="sec">
   <div class="h"><span class="n">4</span><p class="t">Motivação</p></div>
   <p class="hint">✍ Anote as palavras exatas do lead. O closer vai usar na venda.</p>
-  <label for="f-mot">O que te motivou a buscar isso?</label>
+  <label>O que te motivou a buscar isso?</label>
+  <div class="chips" id="c-mot" role="group" aria-label="Motivação">
+    <button type="button" data-v="sair do emprego" onclick="tog(this)">Sair do emprego</button>
+    <button type="button" data-v="aumentar a renda" onclick="tog(this)">Aumentar a renda</button>
+    <button type="button" data-v="tempo com a família" onclick="tog(this)">Tempo com a família</button>
+    <button type="button" data-v="quitar dívidas" onclick="tog(this)">Quitar dívidas</button>
+    <button type="button" data-v="viver do que gosta" onclick="tog(this)">Viver do que gosta</button>
+  </div>
+  <label for="f-mot">Nas palavras dele</label>
   <textarea id="f-mot" placeholder="Ex.: dar uma vida melhor pros meus filhos"></textarea>
   <div class="script" id="s-mot">"Quando você diz isso, o que exatamente quer dizer?"</div>
   <label for="f-mot2">Aprofundamento (o que isso significa na prática)</label>
@@ -177,7 +188,15 @@
 <div class="sec">
   <div class="h"><span class="n">5</span><p class="t">Impeditivo</p></div>
   <p class="hint">É daqui que sai a solução que o closer apresenta.</p>
-  <label for="f-imp">O que te impede hoje de chegar lá?</label>
+  <label>O que te impede hoje de chegar lá?</label>
+  <div class="chips" id="c-imp" role="group" aria-label="Impeditivo">
+    <button type="button" data-v="não sabe por onde começar" onclick="tog(this)">Não sabe por onde começar</button>
+    <button type="button" data-v="trava nas vendas" onclick="tog(this)">Trava nas vendas</button>
+    <button type="button" data-v="não consegue tráfego" onclick="tog(this)">Não consegue tráfego</button>
+    <button type="button" data-v="falta de constância" onclick="tog(this)">Falta de constância</button>
+    <button type="button" data-v="falta de dinheiro para investir" onclick="tog(this)">Falta de dinheiro para investir</button>
+  </div>
+  <label for="f-imp">Nas palavras dele</label>
   <textarea id="f-imp" placeholder="A maior dor, nas palavras do lead"></textarea>
   <label for="f-tent">Já tentou resolver? Como?</label><input id="f-tent" placeholder="O que já testou e por que não funcionou">
   <label for="f-cursos">Já investiu em curso ou mentoria? Quanto? Como foi?</label><input id="f-cursos" placeholder="Melhor preditor de compra high ticket">
@@ -210,13 +229,13 @@
   </div>
   <div id="g-dec" class="hidden">
     <p class="hint" style="margin:10px 0 0">Marque todos que pesam na decisão.</p>
-    <div class="chips" id="c-dec" role="group" aria-label="Quem decide junto">
-      <button type="button" data-dec="cônjuge" onclick="tog(this)">Cônjuge</button>
-      <button type="button" data-dec="sócio" onclick="tog(this)">Sócio</button>
-      <button type="button" data-dec="familiar" onclick="tog(this)">Familiar</button>
-      <button type="button" data-dec="amigo ou conhecido" onclick="tog(this)">Amigo ou conhecido</button>
-      <button type="button" data-dec="mentor ou consultor" onclick="tog(this)">Mentor ou consultor</button>
-      <button type="button" data-dec="investidor" onclick="tog(this)">Investidor</button>
+    <div class="chips flag" id="c-dec" role="group" aria-label="Quem decide junto">
+      <button type="button" data-v="cônjuge" onclick="tog(this)">Cônjuge</button>
+      <button type="button" data-v="sócio" onclick="tog(this)">Sócio</button>
+      <button type="button" data-v="familiar" onclick="tog(this)">Familiar</button>
+      <button type="button" data-v="amigo ou conhecido" onclick="tog(this)">Amigo ou conhecido</button>
+      <button type="button" data-v="mentor ou consultor" onclick="tog(this)">Mentor ou consultor</button>
+      <button type="button" data-v="investidor" onclick="tog(this)">Investidor</button>
     </div>
     <label for="f-dec-obs">Quem, especificamente</label>
     <input id="f-dec-obs" placeholder="Nome, relação e o quanto pesa na decisão">
@@ -275,7 +294,7 @@ function show(id,on){document.getElementById(id).classList.toggle('hidden',!on)}
 function seg(id,on){document.getElementById(id).classList.toggle('on',on)}
 function segb(id,on){var e=document.getElementById(id);e.classList.toggle('on',on);e.classList.toggle('bad',on)}
 function tog(b){b.classList.toggle('on')}
-function decs(){return Array.prototype.slice.call(document.querySelectorAll('#c-dec button.on')).map(function(b){return b.getAttribute('data-dec')}).join(', ')}
+function marc(id){return Array.prototype.slice.call(document.querySelectorAll('#'+id+' button.on')).map(function(b){return b.getAttribute('data-v')}).join(', ')}
 function setCen(t){temProd=t;seg('b-tem',t);seg('b-ntem',!t);show('g-tem',t);show('g-ntem',!t)}
 function setRoda(t){roda=t;seg('b-roda',t);seg('b-nroda',!t)}
 function setOcu(t){ocu=t;seg('b-ocu-sim',t);seg('b-ocu-nao',!t);show('g-ocu',t)}
@@ -295,7 +314,7 @@ function upd(){
 function linha(rot,id){var x=v(id);return x?rot+': '+x+'\n':''}
 function copiar(){
   var t='FICHA DE QUALIFICAÇÃO SDR\n\n';
-  t+=linha('Lead','f-nome')+linha('Nicho','f-nicho')+linha('Tempo no digital','f-tempo');
+  t+=linha('Lead','f-nome')+linha('E-mail','f-email')+linha('Telefone','f-tel')+linha('Nicho','f-nicho')+linha('Tempo no digital','f-tempo');
   t+=linha('Faixa etária','f-idade')+linha('Cidade/UF','f-cid')+linha('Onde conheceu','f-fonte')+linha('Acompanha há','f-segue');
   t+='\nCenário: '+(temProd?'Tem produto':'Não tem produto')+'\n';
   if(temProd){
@@ -311,12 +330,12 @@ function copiar(){
   } else {
     t+=linha('Ideia de produto','f-ideia')+linha('Público ideal','f-pub')+linha('Audiência','f-aud')+linha('Já vendeu/testou','f-val')+linha('Ocupação/renda','f-renda')+linha('Experiência tráfego/vendas','f-exp');
   }
-  t+='\n'+linha('Motivação','f-mot')+linha('Na prática','f-mot2');
-  t+='\n'+linha('Impeditivo','f-imp')+linha('Já tentou resolver','f-tent')+linha('Já investiu em curso/mentoria','f-cursos');
+  t+='\n'+(marc('c-mot')?'Motivação: '+marc('c-mot')+'\n':'')+linha('  Nas palavras dele','f-mot')+linha('Na prática','f-mot2');
+  t+='\n'+(marc('c-imp')?'Impeditivo: '+marc('c-imp')+'\n':'')+linha('  Nas palavras dele','f-imp')+linha('Já tentou resolver','f-tent')+linha('Já investiu em curso/mentoria','f-cursos');
   t+='\n'+linha('Meta','f-meta')+linha('Prazo','f-prazo');
   t+=linha('Disposição de investimento','f-disp');
   var sin='';
-  if(dec!==null)sin+='Decisão: '+(dec?('compartilhada'+(decs()?' ('+decs()+')':'')):'decide sozinho')+'\n';
+  if(dec!==null)sin+='Decisão: '+(dec?('compartilhada'+(marc('c-dec')?' ('+marc('c-dec')+')':'')):'decide sozinho')+'\n';
   sin+=linha('  Quem','f-dec-obs');
   if(tempo!==null)sin+='Tempo: '+(tempo?'tem':'não tem')+(v('f-tempo-sem')?', '+v('f-tempo-sem'):'')+'\n';
   else sin+=linha('Tempo','f-tempo-sem');
@@ -324,7 +343,7 @@ function copiar(){
   sin+=linha('Outros sinais','f-flags');
   if(sin)t+='\nDECISÃO, TEMPO E URGÊNCIA\n'+sin;
   var fl=[];
-  if(dec===true)fl.push('decisão compartilhada'+(decs()?' ('+decs()+')':''));
+  if(dec===true)fl.push('decisão compartilhada'+(marc('c-dec')?' ('+marc('c-dec')+')':''));
   if(tempo===false)fl.push('sem tempo para executar');
   if(urg==='dep')fl.push('não quer começar agora');
   if(fl.length)t+='\nRED FLAGS: '+fl.join('; ')+'\n';
@@ -343,7 +362,7 @@ function limpar(){
   ocu=null;dec=null;tempo=null;urg='';
   ['b-ocu-sim','b-ocu-nao','b-dec-sim','b-dec-nao','b-tp-sim','b-tp-nao','b-urg-ja','b-urg-dep'].forEach(function(i){
     document.getElementById(i).classList.remove('on','bad')});
-  document.querySelectorAll('#c-dec button').forEach(function(b){b.classList.remove('on')});
+  document.querySelectorAll('.chips button').forEach(function(b){b.classList.remove('on')});
   show('g-ocu',false);show('g-dec',false);show('g-urg',false);setRoda(true);upd();
 }
 setCen(temProd);setTraf(traf);setRoda(roda);upd();

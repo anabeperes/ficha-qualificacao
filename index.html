@@ -79,10 +79,46 @@
   .actions .primary:hover{background:#D8D7D1}
   #f-out{display:none;min-height:160px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;margin-top:4px}
   .hidden{display:none}
+  /* ---- AI settings ---- */
+  .ai-cfg{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin:0 0 12px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+  .ai-cfg label{font-size:12px;color:var(--muted);margin:0 0 3px;display:block}
+  .ai-cfg input{font:inherit;font-size:13px;color:var(--text);background:var(--field);border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px;width:100%}
+  .ai-cfg input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+  .ai-cfg select{font:inherit;font-size:13px;color:var(--text);background:var(--field);border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px}
+  .ai-cfg .g1{flex:1;min-width:200px}
+  .ai-cfg .g2{flex-shrink:0}
+  .actions .ai-btn{flex:1;background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border);font-weight:600}
+  .actions .ai-btn:hover{background:#1e3650}
+  .actions .ai-btn:disabled{opacity:0.55;cursor:not-allowed}
+  /* ---- briefing result ---- */
+  #briefing-result{display:none;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:8px 0 0;line-height:1.7}
+  #briefing-result h2{font-size:16px;font-weight:700;margin:0 0 10px}
+  #briefing-result h3{font-size:14px;font-weight:700;margin:14px 0 4px}
+  #briefing-result p{margin:4px 0}
+  #briefing-result hr{border:none;border-top:1px solid var(--border);margin:16px 0}
+  #briefing-result ul{margin:4px 0;padding-left:18px}
+  #briefing-result li{margin:2px 0}
+  #briefing-result .copy-brief{float:right;font-size:12px;padding:4px 10px;margin-top:-4px}
+  .err-msg{color:var(--danger);font-size:13px;margin:6px 0 0;background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:var(--radius);padding:8px 12px}
 </style>
 </head>
 <body>
 <div class="wrap">
+
+<div class="ai-cfg">
+  <div class="g1">
+    <label for="ai-key">🔑 API Key Anthropic</label>
+    <input id="ai-key" type="password" placeholder="sk-ant-…" autocomplete="off" oninput="saveKey()" value="">
+  </div>
+  <div class="g2">
+    <label for="ai-model">Modelo</label>
+    <select id="ai-model" onchange="saveKey()">
+      <option value="claude-haiku-4-5">Haiku 4.5 — rápido / barato (teste)</option>
+      <option value="claude-sonnet-4-6" selected>Sonnet 4.6 — qualidade</option>
+      <option value="claude-opus-5">Opus 5 — máximo</option>
+    </select>
+  </div>
+</div>
 
 <header>
   <h1>Ficha de qualificação SDR</h1>
@@ -328,10 +364,12 @@
 </div>
 
 <div class="actions">
-  <button type="button" class="primary" onclick="copiar()"><span id="cp-lbl">Copiar como texto</span></button>
+  <button type="button" id="btn-gerar" class="ai-btn" onclick="gerarBriefing()">⚡ Gerar Briefing com IA</button>
+  <button type="button" class="primary" onclick="copiar()" style="flex:0 0 auto"><span id="cp-lbl">Copiar texto</span></button>
   <button type="button" onclick="limpar()">Limpar</button>
 </div>
 <textarea id="f-out" aria-label="Texto gerado"></textarea>
+<div id="briefing-result"></div>
 
 </div>
 <script>
@@ -821,6 +859,270 @@ function limpar(){
   show('g-ocu',false);show('g-dec',false);show('g-urg',false);setRoda(true);upd();
 }
 setCen(temProd);setTraf(traf);setRoda(roda);upd();
+
+/* ---- API Key persistence ---- */
+(function(){
+  var k=localStorage.getItem('ai_key')||'';
+  var m=localStorage.getItem('ai_model')||'claude-sonnet-4-6';
+  if(k)document.getElementById('ai-key').value=k;
+  var sel=document.getElementById('ai-model');
+  for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===m)sel.selectedIndex=i;}
+})();
+function saveKey(){
+  localStorage.setItem('ai_key',document.getElementById('ai-key').value.trim());
+  localStorage.setItem('ai_model',document.getElementById('ai-model').value);
+}
+
+/* ---- Simple markdown → HTML ---- */
+function inlineFmt(t){
+  return t
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g,'<em>$1</em>');
+}
+function mdToHtml(md){
+  var lines=md.split('\n');
+  var out='';var inUl=false;
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i];
+    if(/^#{1,2}\s/.test(l)){
+      if(inUl){out+='</ul>';inUl=false;}
+      var hm=l.match(/^(#{1,2})\s+(.*)/);
+      var tag=hm[1].length===1?'h2':'h3';
+      out+='<'+tag+'>'+inlineFmt(hm[2])+'</'+tag+'>';
+    } else if(l.trim()==='---'){
+      if(inUl){out+='</ul>';inUl=false;}
+      out+='<hr>';
+    } else if(/^[-*]\s/.test(l)){
+      if(!inUl){out+='<ul>';inUl=true;}
+      out+='<li>'+inlineFmt(l.replace(/^[-*]\s/,''))+'</li>';
+    } else if(l.trim()===''){
+      if(inUl){out+='</ul>';inUl=false;}
+      out+='';
+    } else {
+      if(inUl){out+='</ul>';inUl=false;}
+      out+='<p>'+inlineFmt(l)+'</p>';
+    }
+  }
+  if(inUl)out+='</ul>';
+  return out;
+}
+
+/* ---- Build form text (same logic as copiar, no clipboard side-effect) ---- */
+function buildFormText(){
+  var t='FICHA DE QUALIFICAÇÃO SDR\n\n';
+  var nv=nichoVal();
+  t+=linha('Lead','f-nome')+linha('E-mail','f-email')+linha('Telefone','f-tel')+(nv?'Nicho: '+nv+'\n':'')+linha('Tempo no digital','f-tempo');
+  t+=linha('Faixa etária','f-idade')+linha('Cidade/UF','f-cid')+linha('Onde conheceu','f-fonte')+linha('Acompanha há','f-segue');
+  t+='\nCenário: '+(temProd?'Tem produto':'Não tem produto')+'\n';
+  if(temProd){
+    t+=linha('Produto','f-prod');
+    t+='Status do produto: '+(roda?'Rodando':'Parado')+'\n';
+    t+=linha('Preço','f-preco')+linha('Faturamento/mês','f-fat')+bloco('Como vende','c-como','f-como')+linha('Página de vendas','f-pv');
+    t+='Tráfego: '+(traf==='ambos'?'Pago + orgânico':traf==='pago'?'Pago':'Orgânico')+'\n';
+    if(traf!=='org')t+=bloco('  Plataforma','c-plat','f-plat')+linha('  Investimento/mês','f-inv-traf')+linha('  Custo por resultado','f-cpr')+linha('  CTR','f-ctr');
+    if(traf!=='pago')t+=linha('  Canal principal','f-canal');
+    t+=linha('  Visitas na página','f-visitas')+linha('  Checkouts iniciados','f-checkouts')+linha('  Compras','f-compras');
+    if(ocu!==null)t+='Outra ocupação: '+(ocu?(v('f-ocu')||'sim'):'não, vive só disso')+'\n';
+    t+=linha('Equipe','f-equipe');
+  } else {
+    t+=linha('Ideia de produto','f-ideia')+linha('Público ideal','f-pub')+linha('Audiência','f-aud')+linha('Já vendeu/testou','f-val')+linha('Ocupação/renda','f-renda')+linha('Experiência tráfego/vendas','f-exp');
+  }
+  var mv=motVal();
+  t+='\n'+(mv?'Motivação: '+mv+'\n':'')+linha('  Nas palavras dele','f-mot');
+  var iv=impVal(),tv=tentVal(),cv=cursosVal();
+  t+='\n'+(iv?'Impeditivo: '+iv+'\n':'')+linha('  Nas palavras dele','f-imp')+(tv?'Já tentou resolver: '+tv+'\n':'')+linha('  Detalhe','f-tent')+(cv?'Já investiu em curso/mentoria: '+cv+'\n':'')+linha('  Com quem / experiência','f-cursos');
+  t+='\n'+linha('Meta','f-meta')+linha('Prazo','f-prazo');
+  var dv=dispVal();
+  t+=(dv?'Disposição de investimento: '+dv+'\n':'')+linha('  Valor exato','f-disp');
+  var sin='';
+  if(dec!==null)sin+='Decisão: '+(dec?('compartilhada'+(marc('c-dec')?' ('+marc('c-dec')+')':'')):'decide sozinho')+'\n';
+  sin+=linha('  Quem','f-dec-obs');
+  if(tempo!==null)sin+='Tempo: '+(tempo?'tem':'não tem')+(v('f-tempo-sem')?', '+v('f-tempo-sem'):'')+'\n';
+  else sin+=linha('Tempo','f-tempo-sem');
+  if(urg)sin+='Urgência: '+(urg==='ja'?'quer começar agora':'quer começar depois')+(v('f-urg-q')?', '+v('f-urg-q'):'')+'\n';
+  sin+=linha('Outros sinais','f-flags');
+  if(sin)t+='\nDECISÃO, TEMPO E URGÊNCIA\n'+sin;
+  var fl=[];
+  if(dec===true)fl.push('decisão compartilhada'+(marc('c-dec')?' ('+marc('c-dec')+')':''));
+  if(tempo===false)fl.push('sem tempo para executar');
+  if(urg==='dep')fl.push('não quer começar agora');
+  if(fl.length)t+='\nRED FLAGS: '+fl.join('; ')+'\n';
+  if(res)t+='\nResultado: '+(res==='q'?'QUALIFICADO, call: '+(v('f-agenda')||'a agendar'):'DESQUALIFICADO, curso: '+(v('f-curso')||'...'))+'\n';
+  t+=linha('Obs. para o closer','f-obs');
+  return t;
+}
+
+/* ---- System prompt (briefing-call-fluxo skill) ---- */
+var BRIEFING_SYSTEM = `# Briefing de Call — Mentoria Fluxo
+
+## Contexto e fluxo
+
+O SDR qualificou o lead e preencheu a ficha (situação → motivação →
+impeditivo → objetivo → investimento). O closer cola esses dados aqui ANTES
+da call de vendas e lê o briefing como preparação — a resposta não é cola ao
+vivo, é leitura pré-call de até ~1 página, que se lê em 3 minutos.
+
+Investimento oficial: R$ 35.000 à vista ou R$ 40.000 parcelado. Nunca cite
+outra condição, desconto ou bolsa.
+
+## Entrada
+
+Os dados da ficha, em qualquer formato: texto colado, campos soltos,
+transcrição de print. Se a ficha vier incompleta, gere o briefing com o que
+tem e liste no bloco final o que faltou e vale perguntar na call. Nunca peça
+os campos antes de gerar.
+
+## Formato de saída (obrigatório, nesta ordem)
+
+**🔍 LEITURA DO LEAD**
+
+2 a 4 frases: qual arquétipo ele é, a dor declarada e a dor real por trás
+dela. Termine com **Red flags:** em negrito — as táticas de call embutidas
+(decisor ausente → todos na call de fechamento; trauma de investimento
+anterior → venda consultiva, prova antes de emoção; caixa justo → abrir o
+parcelado cedo; janela de tempo; ceticismo pós-agência; comprador diferente
+de implementador → exigir a protagonista na call). Se não houver, escreva
+"Red flags: nenhuma grave" e o motivo em meia frase.
+
+Depois, um bloco por objeção/desejo relevante da ficha (2 a 4 blocos),
+separados por linha horizontal, cada um EXATAMENTE neste formato:
+
+**Situação identificada:** a objeção ou desejo, usando as palavras que o
+lead disse (campo Motivação entre aspas quando houver) + meia frase da dor
+real por trás.
+
+**Entrega da mentoria:** **Nome da entrega em negrito.** O argumento em tom
+neutro adaptável (sem nome do lead, sem "você") — o raciocínio que o closer
+adapta ao jeito dele, conectando a entrega à situação identificada.
+
+**Mostrar na tela:** o que abrir durante a call (aula pelo nome, mapa,
+grade, link) — ou "citar, sem mostrar tela".
+
+**🪜 ESTEIRA DE PRODUTOS** *(bloco fixo — SEMPRE presente, SEMPRE por último)*
+
+Mesmo formato dos blocos acima. A situação identificada adapta ao momento do
+lead (concentração num produto só; medo de escolher o degrau errado; sobe e
+desce de faturamento; visão de futuro pra quem está começando). A entrega é
+sempre a aula **Como Montar uma Esteira de Produtos (do Low ao High Ticket)
+que Vende Todos os Dias**, e o argumento carrega sempre este raciocínio: o
+low ticket gera volume de vendas e cria uma base de compradores que sobe
+naturalmente para o próximo produto mais caro — o que torna a aquisição do
+produto mais caro muito mais barata, porque em vez de pagar tráfego frio pra
+vender high ticket, vende-se para quem já está dentro da esteira. Nunca abra
+o briefing pela esteira: ela fecha a visão de futuro (apresentada cedo,
+assusta quem está começando).
+
+**❓ FALTOU NA FICHA** *(só quando houver campos vazios)*
+
+Linhas curtas: o que faltou e por que vale perguntar na call — quando
+possível, transforme a falta em tática (ex.: pedir as métricas no início da
+call permite diagnosticar ao vivo e mostrar autoridade).
+
+## O formato da mentoria (argumento-base de acompanhamento)
+
+A mentoria é INDIVIDUAL. Cada mentorado tem um **Navegador**, que o
+acompanha diariamente — pode mandar mensagem todos os dias, quantas vezes
+quiser — e acompanha a execução de cada estratégia; e um **Analisador**,
+especialista em marketing digital, em reuniões periódicas de mais de 1 hora
+que analisam o projeto inteiro e passam as estratégias macro passo a passo.
+Isso responde toda objeção de "turma lotada", "ninguém vai olhar meu
+negócio", "já fiz mentoria que era só call em grupo" e "medo de não
+implementar".
+
+## Entregas da mentoria (as únicas que existem — nunca invente outra)
+
+1. **Clonagem de Especialista** — duas aulas (imagens e vídeo); montagens realistas feitas no computador, sem gravar nada. Para quem não quer aparecer ou tem vergonha de gravar.
+2. **As três trilhas + reunião individual com analista** — para quem não tem produto ou não sabe o que vender: um analista do time monta o passo a passo do produto dele (o que fazer, como, por onde começar e por quê).
+3. **Trilha Low Ticket** — ebook, PDF, planilha, template e desafio, com mapa em três passos até o produto no ar. Para quem quer começar leve e validar rápido.
+4. **Como Fazer as Primeiras Vendas em 5 Dias** — para quem precisa de retorno rápido ou diz que "a mentoria precisa se pagar". Muda o enquadramento de gasto para ciclo curto de retorno.
+5. **Trilha Middle Ticket** — como criar um bom curso, com o mapa dos cinco passos. Argumento-chave: vende antes, mesmo sem ter gravado o curso.
+6. **Cursos certificados pelo MEC** — extensão, MBA e pós-graduação. Para "meu mercado é sério demais pra infoproduto". Áreas reguladas (CFM, OAB, CRP etc.) são atendidas, com direcionamento dentro das regras do conselho.
+7. **Trilha High Ticket** — como criar uma mentoria (mapa completo: individual ou grupo, recorrente ou com prazo, encontros, ferramentas, entregáveis) + evento de imersão ao vivo. Mentoria com prazo definido é ideal pra quem está começando e precisa de caixa — high ticket pode ser o primeiro passo, não o último.
+8. **Estratégias de Pico (lançamento)** — estratégias completas, incluindo um Retiro dedicado só a Pico e o Pico Pago (o público paga para participar do lançamento). Para quem vive de picos ou quer lançar com método.
+9. **Como Montar uma Esteira de Produtos (do Low ao High Ticket) que Vende Todos os Dias** — bloco fixo do briefing (ver acima).
+10. **Página de vendas** — duas aulas: página de vendas automática com o Claude Cowork (execução sem saber técnica) e os segredos das páginas de venda que faturam todo dia (copy e estratégia).
+11. **Superads** — formação completa de tráfego, para quem QUER APRENDER a fazer o próprio tráfego (ou dirigir gestores com metas e números).
+12. **Tráfego Pago com IA Pro** — 25 aulas; a IA configura, sobe e analisa a campanha; a pessoa só segue o passo a passo de instalação. Para quem NÃO quer aprender e quer que façam por ele.
+13. **Agentes de Aceleração** — agentes de IA prontos (copy, tráfego, produto, oferta); abre e usa, sem saber prompt. Para quem não tem tempo; o impacto vem do volume de agentes.
+14. **Gestão, time e financeiro** — direcionamento específico nas análises + aulas de apoio: Palestra da Patrícia Vasques sobre operação que vende todos os dias com time comercial e IA (com módulo inteiro de administrativo); Tipos de Empresas para Infoprodutores; Separe a Pessoa Física da Jurídica; Emissão de Nota Fiscal; Fundamentos Financeiros; Conceitos Financeiros; Reinvestimento; Política de Distribuição de Lucro; Como Ser um Bom Lançador; Como Encontrar Bons Lançadores; Como Encontrar Bons Experts.
+15. **Comunidade e network** — comunidade com livre acesso e troca constante; Tinder do Flups (conecta experts com coprodutores); eventos presenciais e online.
+16. **QFD + funil de métricas** — para quem já tem produto e trava na conversão. QFD na página de vendas (Quadro = identificação na headline; Furadeira = método claro com etapas; Decorados = prova) + funil de métricas do tráfego (CTR acima de 1% → connect rate mínimo de 65% → checkouts 20% de quem chegou na página → compras 20% de quem abriu o checkout → CPA). Lê-se de cima pra baixo: a primeira etapa fora do aceitável é onde está o problema. Na call, pedir os números nessa ordem diagnostica ao vivo e demonstra autoridade.
+
+## Regras de escopo
+
+- **E-commerce:** atendido pela mentoria.
+- **Negócio físico/local** (clínica, imobiliária, academia como ponto físico, restaurante, loja): NÃO atendido. Nunca prometa contorno para captação de negócio físico. Se a ficha mostrar uma frente digital real (ex.: dentista que quer ensinar outros dentistas), o briefing foca só nessa frente e avisa o closer do limite em Red flags.
+- **Sem entrega dedicada** (cenários raros — não prometa nada específico): retenção/churn de assinatura; objeção de "marketing agressivo vs. meus valores"; automação de vendas por WhatsApp/direct. Nesses casos, responda com o formato individual (Navegador + Analisador) e o método geral.
+- **Pendente de definição do time** (não afirme nem negue; o briefing avisa o closer para confirmar com a coordenação comercial): negócios B2B de ciclo longo; captação para serviço próprio de alto padrão sem infoproduto.
+
+## Regras finais
+
+- Nunca cite número de aula, módulo ou mapa — sempre o nome por extenso, mesmo que a ficha ou o closer usem o número.
+- Nunca invente entrega, aula, case, número ou nome fora da lista acima.
+- Nunca garanta resultado, faturamento ou prazo — o método mostra caminho.
+- Argumentos sempre em tom neutro adaptável: sem o nome do lead, sem "você" — o closer coloca a própria voz. As palavras do lead aparecem só no rótulo "Situação identificada", entre aspas.
+- Resposta de no máximo ~1 página. Se a ficha levantar mais de 4 situações, escolha as mais fortes e agrupe as demais em uma linha.`;
+
+/* ---- Gerar Briefing via API ---- */
+async function gerarBriefing(){
+  var key=document.getElementById('ai-key').value.trim();
+  if(!key){
+    showErr('Insira sua API Key Anthropic no campo acima antes de gerar.');
+    return;
+  }
+  var formText=buildFormText();
+  if(formText.trim()==='FICHA DE QUALIFICAÇÃO SDR'){
+    showErr('Preencha pelo menos alguns campos da ficha antes de gerar.');
+    return;
+  }
+  var btn=document.getElementById('btn-gerar');
+  var model=document.getElementById('ai-model').value||'claude-sonnet-4-6';
+  btn.disabled=true;btn.textContent='⏳ Gerando…';
+  clearErr();
+  document.getElementById('briefing-result').style.display='none';
+  try{
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'content-type':'application/json',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:model,
+        max_tokens:2048,
+        system:BRIEFING_SYSTEM,
+        messages:[{role:'user',content:formText}]
+      })
+    });
+    var data=await resp.json();
+    if(!resp.ok){
+      throw new Error((data.error&&data.error.message)||('HTTP '+resp.status));
+    }
+    var txt=(data.content&&data.content[0]&&data.content[0].text)||'';
+    var rd=document.getElementById('briefing-result');
+    rd.innerHTML='<button class="copy-brief" onclick="copyBrief()">Copiar</button>'+mdToHtml(txt);
+    rd.setAttribute('data-raw',txt);
+    rd.style.display='block';
+    rd.scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){
+    showErr('Erro na API: '+e.message);
+  }finally{
+    btn.disabled=false;btn.textContent='⚡ Gerar Briefing com IA';
+  }
+}
+function copyBrief(){
+  var raw=document.getElementById('briefing-result').getAttribute('data-raw')||'';
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(raw);
+  else{var t=document.createElement('textarea');t.value=raw;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);}
+}
+function showErr(msg){
+  clearErr();
+  var d=document.createElement('div');d.className='err-msg';d.id='ai-err';d.textContent=msg;
+  document.getElementById('btn-gerar').insertAdjacentElement('afterend',d);
+}
+function clearErr(){var e=document.getElementById('ai-err');if(e)e.remove();}
 </script>
 </body>
 </html>

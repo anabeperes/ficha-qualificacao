@@ -226,15 +226,13 @@
   </div>
   <label for="f-imp">Nas palavras dele</label>
   <textarea id="f-imp" placeholder="A maior dor, nas palavras do lead"></textarea>
-  <label style="margin-top:14px">Já tentou resolver? Como?</label>
-  <div class="chips" id="c-tent" role="group" aria-label="Já tentou resolver">
-    <button type="button" data-v="sozinho pelo YouTube" onclick="tog(this)">Sozinho pelo YouTube</button>
-    <button type="button" data-v="comprou curso" onclick="tog(this)">Comprou curso</button>
-    <button type="button" data-v="contratou agência" onclick="tog(this)">Contratou agência</button>
-    <button type="button" data-v="contratou freela" onclick="tog(this)">Contratou freela</button>
-    <button type="button" data-v="nunca tentou" onclick="tog(this)">Nunca tentou</button>
+  <label for="f-tent-q" style="margin-top:14px">Já tentou resolver? Como?</label>
+  <div id="tent-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px"></div>
+  <div class="ac-wrap" id="tent-ac">
+    <input id="f-tent-q" placeholder="Pesquisar…" autocomplete="off" oninput="tentFilter()" onfocus="tentOpen()" onblur="tentBlur()" onkeydown="tentKey(event)">
+    <div class="ac-drop" id="tent-drop" role="listbox"><ul id="tent-list"></ul></div>
   </div>
-  <input id="f-tent" placeholder="O que testou e por que não funcionou">
+  <input id="f-tent" placeholder="O que testou e por que não funcionou" style="margin-top:6px">
 
   <label style="margin-top:14px">Já investiu em curso ou mentoria? Quanto?</label>
   <p class="hint" style="margin:2px 0 6px">Melhor preditor de compra high ticket.</p>
@@ -558,6 +556,72 @@ function impRenderTags(){
 }
 function impVal(){return impSel.join(', ')}
 /* ---------- end impeditivo autocomplete ---------- */
+
+/* ---------- tentou resolver autocomplete (multi) ---------- */
+var TENTATIVAS=['Sozinho pelo YouTube','Comprou curso','Contratou agência','Contratou freela','Nunca tentou'];
+var tentSel=[],tentHl=-1,tentItems=[];
+function tentRender(list){
+  var ul=document.getElementById('tent-list');
+  ul.innerHTML='';
+  if(!list.length){ul.innerHTML='<li class="ac-empty">Nenhuma opção encontrada</li>';tentItems=[];return}
+  tentItems=list;
+  list.forEach(function(item){
+    var q=norm(document.getElementById('f-tent-q').value.trim());
+    var label=item;
+    if(q){var idx=norm(item).indexOf(q);
+      if(idx!==-1)label=item.slice(0,idx)+'<span class="ac-match">'+item.slice(idx,idx+q.length)+'</span>'+item.slice(idx+q.length);}
+    var li=document.createElement('li');li.setAttribute('role','option');
+    li.innerHTML=label;
+    if(tentSel.indexOf(item)!==-1)li.classList.add('ac-sel');
+    li.addEventListener('mousedown',function(e){e.preventDefault();tentToggle(item)});
+    ul.appendChild(li);
+  });
+  tentHl=-1;
+}
+function tentFilter(){
+  var q=norm(document.getElementById('f-tent-q').value.trim());
+  var filtered=q?TENTATIVAS.filter(function(n){return norm(n).indexOf(q)!==-1}):TENTATIVAS.slice();
+  tentRender(filtered);document.getElementById('tent-drop').classList.add('open');
+}
+function tentOpen(){
+  var q=norm(document.getElementById('f-tent-q').value.trim());
+  var filtered=q?TENTATIVAS.filter(function(n){return norm(n).indexOf(q)!==-1}):TENTATIVAS.slice();
+  tentRender(filtered);document.getElementById('tent-drop').classList.add('open');
+}
+function tentBlur(){setTimeout(function(){document.getElementById('tent-drop').classList.remove('open');tentHl=-1},150)}
+function tentHighlight(i){
+  var lis=document.querySelectorAll('#tent-list li:not(.ac-empty)');
+  lis.forEach(function(l){l.classList.remove('ac-hl')});
+  if(i>=0&&i<lis.length){lis[i].classList.add('ac-hl');lis[i].scrollIntoView({block:'nearest'})}
+}
+function tentKey(e){
+  var lis=document.querySelectorAll('#tent-list li:not(.ac-empty)');
+  if(e.key==='ArrowDown'){e.preventDefault();tentHl=Math.min(tentHl+1,lis.length-1);tentHighlight(tentHl)}
+  else if(e.key==='ArrowUp'){e.preventDefault();tentHl=Math.max(tentHl-1,0);tentHighlight(tentHl)}
+  else if(e.key==='Enter'){e.preventDefault();if(tentHl>=0&&tentItems[tentHl])tentToggle(tentItems[tentHl]);
+    else if(tentItems.length===1)tentToggle(tentItems[0]);}
+  else if(e.key==='Escape'){document.getElementById('tent-drop').classList.remove('open')}
+}
+function tentToggle(val){
+  var idx=tentSel.indexOf(val);
+  if(idx===-1)tentSel.push(val); else tentSel.splice(idx,1);
+  document.getElementById('f-tent-q').value='';
+  tentRenderTags();tentOpen();
+}
+function tentRemove(val){
+  var idx=tentSel.indexOf(val);if(idx!==-1)tentSel.splice(idx,1);tentRenderTags();
+}
+function tentRenderTags(){
+  var c=document.getElementById('tent-tags');c.innerHTML='';
+  tentSel.forEach(function(v){
+    var s=document.createElement('span');s.className='ac-tag';
+    s.innerHTML=v+'<button type="button" title="Remover" onclick="tentRemove(\''+v.replace(/'/g,"\\'")+'\')">\u00d7</button>';
+    c.appendChild(s);
+  });
+  c.style.display=tentSel.length?'flex':'none';
+}
+function tentVal(){return tentSel.join(', ')}
+/* ---------- end tentou resolver autocomplete ---------- */
 var temProd=true,traf='pago',res='',roda=true,ocu=null,dec=null,tempo=null,urg='';
 function show(id,on){document.getElementById(id).classList.toggle('hidden',!on)}
 function seg(id,on){document.getElementById(id).classList.toggle('on',on)}
@@ -605,7 +669,8 @@ function copiar(){
   var mv=motVal();
   t+='\n'+(mv?'Motivação: '+mv+'\n':'')+linha('  Nas palavras dele','f-mot');
   var iv=impVal();
-  t+='\n'+(iv?'Impeditivo: '+iv+'\n':'')+linha('  Nas palavras dele','f-imp')+bloco('Já tentou resolver','c-tent','f-tent')+bloco('Já investiu em curso/mentoria','c-cursos','f-cursos');
+  var tv=tentVal();
+  t+='\n'+(iv?'Impeditivo: '+iv+'\n':'')+linha('  Nas palavras dele','f-imp')+(tv?'Já tentou resolver: '+tv+'\n':'')+linha('  Detalhe','f-tent')+bloco('Já investiu em curso/mentoria','c-cursos','f-cursos');
   t+='\n'+linha('Meta','f-meta')+linha('Prazo','f-prazo');
   t+=bloco('Disposição de investimento','c-disp','f-disp');
   var sin='';
@@ -634,6 +699,7 @@ function limpar(){
   acRemove();
   motSel=[];motRenderTags();document.getElementById('f-mot-q').value='';
   impSel=[];impRenderTags();document.getElementById('f-imp-q').value='';
+  tentSel=[];tentRenderTags();document.getElementById('f-tent-q').value='';
   document.getElementById('f-out').style.display='none';
   res='';seg('b-qual',false);seg('b-desq',false);show('g-qual',false);show('g-desq',false);
   ocu=null;dec=null;tempo=null;urg='';

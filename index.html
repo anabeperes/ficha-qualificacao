@@ -218,13 +218,11 @@
 <div class="sec">
   <div class="h"><span class="n">5</span><p class="t">Impeditivo</p></div>
   <p class="hint">É daqui que sai a solução que o closer apresenta.</p>
-  <label>O que te impede hoje de chegar lá?</label>
-  <div class="chips" id="c-imp" role="group" aria-label="Impeditivo">
-    <button type="button" data-v="não sabe por onde começar" onclick="tog(this)">Não sabe por onde começar</button>
-    <button type="button" data-v="trava nas vendas" onclick="tog(this)">Trava nas vendas</button>
-    <button type="button" data-v="não consegue tráfego" onclick="tog(this)">Não consegue tráfego</button>
-    <button type="button" data-v="falta de constância" onclick="tog(this)">Falta de constância</button>
-    <button type="button" data-v="falta de dinheiro para investir" onclick="tog(this)">Falta de dinheiro para investir</button>
+  <label for="f-imp-q">O que te impede hoje de chegar lá?</label>
+  <div id="imp-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px"></div>
+  <div class="ac-wrap" id="imp-ac">
+    <input id="f-imp-q" placeholder="Pesquisar impeditivo…" autocomplete="off" oninput="impFilter()" onfocus="impOpen()" onblur="impBlur()" onkeydown="impKey(event)">
+    <div class="ac-drop" id="imp-drop" role="listbox"><ul id="imp-list"></ul></div>
   </div>
   <label for="f-imp">Nas palavras dele</label>
   <textarea id="f-imp" placeholder="A maior dor, nas palavras do lead"></textarea>
@@ -484,6 +482,82 @@ function motRenderTags(){
 }
 function motVal(){return motSel.join(', ')}
 /* ---------- end motivação autocomplete ---------- */
+
+/* ---------- impeditivo autocomplete (multi) ---------- */
+var IMPEDITIVOS=['Não sabe por onde começar','Trava nas vendas','Não consegue gerar tráfego',
+  'Falta de constância','Falta de dinheiro para investir','Falta de tempo','Medo de aparecer',
+  'Falta de conhecimento técnico','Não sabe criar uma oferta','Não tem audiência',
+  'Dificuldade com tecnologia','Falta de apoio familiar','Já tentou sem resultado',
+  'Procrastinação','Perfeccionismo'];
+var impSel=[],impHl=-1,impItems=[];
+function impRender(list){
+  var ul=document.getElementById('imp-list');
+  ul.innerHTML='';
+  if(!list.length){ul.innerHTML='<li class="ac-empty">Nenhum impeditivo encontrado</li>';impItems=[];return}
+  impItems=list;
+  list.forEach(function(item){
+    var q=norm(document.getElementById('f-imp-q').value.trim());
+    var label=item;
+    if(q){var idx=norm(item).indexOf(q);
+      if(idx!==-1)label=item.slice(0,idx)+'<span class="ac-match">'+item.slice(idx,idx+q.length)+'</span>'+item.slice(idx+q.length);}
+    var li=document.createElement('li');li.setAttribute('role','option');
+    li.innerHTML=label;
+    if(impSel.indexOf(item)!==-1)li.classList.add('ac-sel');
+    li.addEventListener('mousedown',function(e){e.preventDefault();impToggle(item)});
+    ul.appendChild(li);
+  });
+  impHl=-1;
+}
+function impFilter(){
+  var q=norm(document.getElementById('f-imp-q').value.trim());
+  var filtered=q?IMPEDITIVOS.filter(function(n){return norm(n).indexOf(q)!==-1}):IMPEDITIVOS.slice();
+  impRender(filtered);
+  document.getElementById('imp-drop').classList.add('open');
+}
+function impOpen(){
+  var q=norm(document.getElementById('f-imp-q').value.trim());
+  var filtered=q?IMPEDITIVOS.filter(function(n){return norm(n).indexOf(q)!==-1}):IMPEDITIVOS.slice();
+  impRender(filtered);
+  document.getElementById('imp-drop').classList.add('open');
+}
+function impBlur(){setTimeout(function(){document.getElementById('imp-drop').classList.remove('open');impHl=-1},150)}
+function impHighlight(i){
+  var lis=document.querySelectorAll('#imp-list li:not(.ac-empty)');
+  lis.forEach(function(l){l.classList.remove('ac-hl')});
+  if(i>=0&&i<lis.length){lis[i].classList.add('ac-hl');lis[i].scrollIntoView({block:'nearest'})}
+}
+function impKey(e){
+  var lis=document.querySelectorAll('#imp-list li:not(.ac-empty)');
+  if(e.key==='ArrowDown'){e.preventDefault();impHl=Math.min(impHl+1,lis.length-1);impHighlight(impHl)}
+  else if(e.key==='ArrowUp'){e.preventDefault();impHl=Math.max(impHl-1,0);impHighlight(impHl)}
+  else if(e.key==='Enter'){e.preventDefault();if(impHl>=0&&impItems[impHl])impToggle(impItems[impHl]);
+    else if(impItems.length===1)impToggle(impItems[0]);}
+  else if(e.key==='Escape'){document.getElementById('imp-drop').classList.remove('open')}
+}
+function impToggle(val){
+  var idx=impSel.indexOf(val);
+  if(idx===-1)impSel.push(val); else impSel.splice(idx,1);
+  document.getElementById('f-imp-q').value='';
+  impRenderTags();
+  impOpen();
+}
+function impRemove(val){
+  var idx=impSel.indexOf(val);
+  if(idx!==-1)impSel.splice(idx,1);
+  impRenderTags();
+}
+function impRenderTags(){
+  var c=document.getElementById('imp-tags');
+  c.innerHTML='';
+  impSel.forEach(function(v){
+    var s=document.createElement('span');s.className='ac-tag';
+    s.innerHTML=v+'<button type="button" title="Remover" onclick="impRemove(\''+v.replace(/'/g,"\\'")+'\')">\u00d7</button>';
+    c.appendChild(s);
+  });
+  c.style.display=impSel.length?'flex':'none';
+}
+function impVal(){return impSel.join(', ')}
+/* ---------- end impeditivo autocomplete ---------- */
 var temProd=true,traf='pago',res='',roda=true,ocu=null,dec=null,tempo=null,urg='';
 function show(id,on){document.getElementById(id).classList.toggle('hidden',!on)}
 function seg(id,on){document.getElementById(id).classList.toggle('on',on)}
@@ -530,7 +604,8 @@ function copiar(){
   }
   var mv=motVal();
   t+='\n'+(mv?'Motivação: '+mv+'\n':'')+linha('  Nas palavras dele','f-mot');
-  t+='\n'+(marc('c-imp')?'Impeditivo: '+marc('c-imp')+'\n':'')+linha('  Nas palavras dele','f-imp')+bloco('Já tentou resolver','c-tent','f-tent')+bloco('Já investiu em curso/mentoria','c-cursos','f-cursos');
+  var iv=impVal();
+  t+='\n'+(iv?'Impeditivo: '+iv+'\n':'')+linha('  Nas palavras dele','f-imp')+bloco('Já tentou resolver','c-tent','f-tent')+bloco('Já investiu em curso/mentoria','c-cursos','f-cursos');
   t+='\n'+linha('Meta','f-meta')+linha('Prazo','f-prazo');
   t+=bloco('Disposição de investimento','c-disp','f-disp');
   var sin='';
@@ -558,6 +633,7 @@ function limpar(){
   document.querySelectorAll('input,textarea,select').forEach(function(e){e.value=''});
   acRemove();
   motSel=[];motRenderTags();document.getElementById('f-mot-q').value='';
+  impSel=[];impRenderTags();document.getElementById('f-imp-q').value='';
   document.getElementById('f-out').style.display='none';
   res='';seg('b-qual',false);seg('b-desq',false);show('g-qual',false);show('g-desq',false);
   ocu=null;dec=null;tempo=null;urg='';

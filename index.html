@@ -234,16 +234,14 @@
   </div>
   <input id="f-tent" placeholder="O que testou e por que não funcionou" style="margin-top:6px">
 
-  <label style="margin-top:14px">Já investiu em curso ou mentoria? Quanto?</label>
+  <label for="f-cursos-q" style="margin-top:14px">Já investiu em curso ou mentoria? Quanto?</label>
   <p class="hint" style="margin:2px 0 6px">Melhor preditor de compra high ticket.</p>
-  <div class="chips" id="c-cursos" role="group" aria-label="Quanto já investiu">
-    <button type="button" data-v="nunca investiu" onclick="uni(this)">Nunca</button>
-    <button type="button" data-v="até R$ 1 mil" onclick="uni(this)">Até R$ 1 mil</button>
-    <button type="button" data-v="R$ 1 a 5 mil" onclick="uni(this)">R$ 1 a 5 mil</button>
-    <button type="button" data-v="R$ 5 a 20 mil" onclick="uni(this)">R$ 5 a 20 mil</button>
-    <button type="button" data-v="mais de R$ 20 mil" onclick="uni(this)">Mais de R$ 20 mil</button>
+  <div id="cursos-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px"></div>
+  <div class="ac-wrap" id="cursos-ac">
+    <input id="f-cursos-q" placeholder="Pesquisar…" autocomplete="off" oninput="cursosFilter()" onfocus="cursosOpen()" onblur="cursosBlur()" onkeydown="cursosKey(event)">
+    <div class="ac-drop" id="cursos-drop" role="listbox"><ul id="cursos-list"></ul></div>
   </div>
-  <input id="f-cursos" placeholder="Com quem, e como foi a experiência">
+  <input id="f-cursos" placeholder="Com quem, e como foi a experiência" style="margin-top:6px">
 </div>
 
 <div class="sec">
@@ -251,7 +249,7 @@
   <p class="hint">Exija um número. É ele que ancora a pergunta de investimento.</p>
   <div class="grid2">
     <div><label for="f-meta">Meta de faturamento</label><input id="f-meta" placeholder="R$ 30 mil/mês"></div>
-    <div><label for="f-prazo">Prazo</label><select id="f-prazo"><option value="">...</option><option>6 meses</option><option>12 meses</option></select></div>
+    <div><label for="f-prazo">Prazo</label><select id="f-prazo"><option value="">...</option><option>1 mês</option><option>2 meses</option><option>3 meses</option><option>4 meses</option><option>5 meses</option><option>6 meses</option><option>7 meses</option><option>8 meses</option><option>9 meses</option><option>10 meses</option><option>11 meses</option><option>12 meses</option></select></div>
   </div>
 </div>
 
@@ -622,6 +620,63 @@ function tentRenderTags(){
 }
 function tentVal(){return tentSel.join(', ')}
 /* ---------- end tentou resolver autocomplete ---------- */
+
+/* ---------- cursos/mentoria autocomplete (single) ---------- */
+var CURSOS=['Nunca investiu','Até R$ 1 mil','R$ 1 a 5 mil','R$ 5 a 20 mil','Mais de R$ 20 mil'];
+var cursosSel=null,cursosHl=-1,cursosItems=[];
+function cursosRender(list){
+  var ul=document.getElementById('cursos-list');
+  ul.innerHTML='';
+  if(!list.length){ul.innerHTML='<li class="ac-empty">Nenhuma opção encontrada</li>';cursosItems=[];return}
+  cursosItems=list;
+  list.forEach(function(item){
+    var q=norm(document.getElementById('f-cursos-q').value.trim());
+    var label=item;
+    if(q){var idx=norm(item).indexOf(q);
+      if(idx!==-1)label=item.slice(0,idx)+'<span class="ac-match">'+item.slice(idx,idx+q.length)+'</span>'+item.slice(idx+q.length);}
+    var li=document.createElement('li');li.setAttribute('role','option');
+    li.innerHTML=label;
+    if(item===cursosSel)li.classList.add('ac-sel');
+    li.addEventListener('mousedown',function(e){e.preventDefault();cursosSelect(item)});
+    ul.appendChild(li);
+  });
+  cursosHl=-1;
+}
+function cursosFilter(){
+  var q=norm(document.getElementById('f-cursos-q').value.trim());
+  var filtered=q?CURSOS.filter(function(n){return norm(n).indexOf(q)!==-1}):CURSOS.slice();
+  cursosRender(filtered);document.getElementById('cursos-drop').classList.add('open');
+}
+function cursosOpen(){
+  var q=norm(document.getElementById('f-cursos-q').value.trim());
+  var filtered=q?CURSOS.filter(function(n){return norm(n).indexOf(q)!==-1}):CURSOS.slice();
+  cursosRender(filtered);document.getElementById('cursos-drop').classList.add('open');
+}
+function cursosBlur(){setTimeout(function(){document.getElementById('cursos-drop').classList.remove('open');cursosHl=-1},150)}
+function cursosHighlight(i){
+  var lis=document.querySelectorAll('#cursos-list li:not(.ac-empty)');
+  lis.forEach(function(l){l.classList.remove('ac-hl')});
+  if(i>=0&&i<lis.length){lis[i].classList.add('ac-hl');lis[i].scrollIntoView({block:'nearest'})}
+}
+function cursosKey(e){
+  var lis=document.querySelectorAll('#cursos-list li:not(.ac-empty)');
+  if(e.key==='ArrowDown'){e.preventDefault();cursosHl=Math.min(cursosHl+1,lis.length-1);cursosHighlight(cursosHl)}
+  else if(e.key==='ArrowUp'){e.preventDefault();cursosHl=Math.max(cursosHl-1,0);cursosHighlight(cursosHl)}
+  else if(e.key==='Enter'){e.preventDefault();if(cursosHl>=0&&cursosItems[cursosHl])cursosSelect(cursosItems[cursosHl]);
+    else if(cursosItems.length===1)cursosSelect(cursosItems[0]);}
+  else if(e.key==='Escape'){document.getElementById('cursos-drop').classList.remove('open')}
+}
+function cursosSelect(val){
+  cursosSel=val;
+  document.getElementById('f-cursos-q').value='';
+  document.getElementById('cursos-drop').classList.remove('open');
+  var tag=document.getElementById('cursos-tags');
+  tag.innerHTML='<span class="ac-tag">'+val+'<button type="button" title="Remover" onclick="cursosRemove()">×</button></span>';
+  tag.style.display='flex';
+}
+function cursosRemove(){cursosSel=null;var t=document.getElementById('cursos-tags');t.innerHTML='';t.style.display='none';document.getElementById('f-cursos-q').focus()}
+function cursosVal(){return cursosSel||''}
+/* ---------- end cursos/mentoria autocomplete ---------- */
 var temProd=true,traf='pago',res='',roda=true,ocu=null,dec=null,tempo=null,urg='';
 function show(id,on){document.getElementById(id).classList.toggle('hidden',!on)}
 function seg(id,on){document.getElementById(id).classList.toggle('on',on)}
@@ -670,7 +725,8 @@ function copiar(){
   t+='\n'+(mv?'Motivação: '+mv+'\n':'')+linha('  Nas palavras dele','f-mot');
   var iv=impVal();
   var tv=tentVal();
-  t+='\n'+(iv?'Impeditivo: '+iv+'\n':'')+linha('  Nas palavras dele','f-imp')+(tv?'Já tentou resolver: '+tv+'\n':'')+linha('  Detalhe','f-tent')+bloco('Já investiu em curso/mentoria','c-cursos','f-cursos');
+  var cv=cursosVal();
+  t+='\n'+(iv?'Impeditivo: '+iv+'\n':'')+linha('  Nas palavras dele','f-imp')+(tv?'Já tentou resolver: '+tv+'\n':'')+linha('  Detalhe','f-tent')+(cv?'Já investiu em curso/mentoria: '+cv+'\n':'')+linha('  Com quem / experiência','f-cursos');
   t+='\n'+linha('Meta','f-meta')+linha('Prazo','f-prazo');
   t+=bloco('Disposição de investimento','c-disp','f-disp');
   var sin='';
@@ -700,6 +756,7 @@ function limpar(){
   motSel=[];motRenderTags();document.getElementById('f-mot-q').value='';
   impSel=[];impRenderTags();document.getElementById('f-imp-q').value='';
   tentSel=[];tentRenderTags();document.getElementById('f-tent-q').value='';
+  cursosRemove();
   document.getElementById('f-out').style.display='none';
   res='';seg('b-qual',false);seg('b-desq',false);show('g-qual',false);show('g-desq',false);
   ocu=null;dec=null;tempo=null;urg='';

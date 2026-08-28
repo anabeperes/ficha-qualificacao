@@ -215,9 +215,6 @@
   </div>
   <label for="f-mot">Nas palavras dele</label>
   <textarea id="f-mot" placeholder="Ex.: dar uma vida melhor pros meus filhos"></textarea>
-  <div class="script" id="s-mot">"Quando você diz isso, o que exatamente quer dizer?"</div>
-  <label for="f-mot2">Aprofundamento (o que isso significa na prática)</label>
-  <textarea id="f-mot2" placeholder="Resposta concreta: escola dos filhos, sair do CLT…"></textarea>
 </div>
 
 <div class="sec">
@@ -432,12 +429,10 @@ function setTraf(t){traf=t;seg('b-pago',t!=='org');seg('b-org',t!=='pago');seg('
 function setRes(r){res=r;seg('b-qual',r==='q');seg('b-desq',r==='d');show('g-qual',r==='q');show('g-desq',r==='d')}
 function v(id){var e=document.getElementById(id);return e?e.value.trim():''}
 function upd(){
-  var n=v('f-nome')||'Fulano',m=v('f-meta'),mo=v('f-mot');
-  document.getElementById('s-inv').textContent='"'+n+', para chegar '+(m?'em '+m:'nesse resultado')+', quanto você estaria disposto a investir numa mentoria?"';
-  var mt=mo?(mo.length>60?mo.slice(0,60)+'…':mo):'isso';
-  document.getElementById('s-mot').textContent='"Quando você diz “'+mt+'”, o que exatamente quer dizer?"';
+  var n=v('f-nome')||'Fulano',m=v('f-meta');
+  document.getElementById('s-inv').textContent='”'+n+', para chegar '+(m?'em '+m:'nesse resultado')+', quanto você estaria disposto a investir numa mentoria?”';
 }
-['f-nome','f-meta','f-mot'].forEach(function(i){document.getElementById(i).addEventListener('input',upd)});
+['f-nome','f-meta'].forEach(function(i){document.getElementById(i).addEventListener('input',upd)});
 function linha(rot,id){var x=v(id);return x?rot+': '+x+'\n':''}
 function copiar(){
   var t='FICHA DE QUALIFICAÇÃO SDR\n\n';
@@ -458,7 +453,7 @@ function copiar(){
   } else {
     t+=linha('Ideia de produto','f-ideia')+linha('Público ideal','f-pub')+linha('Audiência','f-aud')+linha('Já vendeu/testou','f-val')+linha('Ocupação/renda','f-renda')+linha('Experiência tráfego/vendas','f-exp');
   }
-  t+='\n'+(marc('c-mot')?'Motivação: '+marc('c-mot')+'\n':'')+linha('  Nas palavras dele','f-mot')+linha('Na prática','f-mot2');
+  t+='\n'+(marc('c-mot')?'Motivação: '+marc('c-mot')+'\n':'')+linha('  Nas palavras dele','f-mot');
   t+='\n'+(marc('c-imp')?'Impeditivo: '+marc('c-imp')+'\n':'')+linha('  Nas palavras dele','f-imp')+bloco('Já tentou resolver','c-tent','f-tent')+bloco('Já investiu em curso/mentoria','c-cursos','f-cursos');
   t+='\n'+linha('Meta','f-meta')+linha('Prazo','f-prazo');
   t+=bloco('Disposição de investimento','c-disp','f-disp');

@@ -53,6 +53,23 @@
   .chips button{font-size:13px;padding:7px 12px}
   .chips button.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border);font-weight:600}
   .chips.flag button.on{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-border)}
+  /* nicho autocomplete */
+  .ac-wrap{position:relative;margin:8px 0 4px}
+  .ac-wrap input{width:100%}
+  .ac-tag{display:inline-flex;align-items:center;gap:5px;background:var(--accent-bg);color:var(--accent);
+    border:1px solid var(--accent-border);border-radius:var(--radius);font-size:13px;padding:4px 10px;margin:4px 0}
+  .ac-tag button{all:unset;cursor:pointer;font-size:15px;line-height:1;color:var(--accent);opacity:.7}
+  .ac-tag button:hover{opacity:1}
+  .ac-drop{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);
+    border:1px solid var(--border-strong);border-radius:var(--radius);z-index:100;
+    max-height:220px;overflow-y:auto;display:none}
+  .ac-drop.open{display:block}
+  .ac-drop li{list-style:none;padding:9px 12px;font-size:13px;cursor:pointer}
+  .ac-drop li:hover,.ac-drop li.ac-hl{background:var(--field-hover)}
+  .ac-drop li.ac-sel{color:var(--accent);font-weight:600}
+  .ac-drop li .ac-match{text-decoration:underline;text-underline-offset:2px}
+  .ac-drop ul{margin:0;padding:0}
+  .ac-empty{padding:9px 12px;font-size:13px;color:var(--hint);font-style:italic}
   .script{background:var(--bg);border-radius:var(--radius);padding:10px 12px;font-size:13px;
     color:var(--muted);font-style:italic;margin:8px 0 2px}
   .badge{font-size:11px;color:var(--hint);border:1px solid var(--border);border-radius:var(--radius);
@@ -78,16 +95,12 @@
   <label for="f-nome">Nome</label><input id="f-nome" placeholder="Maria Souza">
   <label for="f-email">E-mail</label><input id="f-email" type="email" inputmode="email" autocomplete="off" placeholder="maria@email.com">
   <label for="f-tel">Telefone</label><input id="f-tel" type="tel" inputmode="tel" autocomplete="off" placeholder="(61) 99999-9999">
-  <label>Nicho</label>
-  <div class="chips" id="c-nicho" role="group" aria-label="Nicho">
-    <button type="button" data-v="emagrecimento" onclick="uni(this)">Emagrecimento</button>
-    <button type="button" data-v="finanças" onclick="uni(this)">Finanças</button>
-    <button type="button" data-v="relacionamento" onclick="uni(this)">Relacionamento</button>
-    <button type="button" data-v="espiritualidade" onclick="uni(this)">Espiritualidade</button>
-    <button type="button" data-v="educação" onclick="uni(this)">Educação</button>
-    <button type="button" data-v="outro" onclick="uni(this)">Outro</button>
+  <label for="f-nicho-q">Nicho</label>
+  <div id="nicho-tag"></div>
+  <div class="ac-wrap" id="nicho-ac">
+    <input id="f-nicho-q" placeholder="Pesquisar nicho…" autocomplete="off" oninput="acFilter()" onfocus="acOpen()" onblur="acBlur()" onkeydown="acKey(event)">
+    <div class="ac-drop" id="nicho-drop" role="listbox"><ul id="nicho-list"></ul></div>
   </div>
-  <input id="f-nicho" placeholder="Qual exatamente">
   <label for="f-tempo">Tempo no digital</label><input id="f-tempo" placeholder="2 anos, começando agora…">
 </div>
 
@@ -336,6 +349,69 @@
 
 </div>
 <script>
+/* ---------- nicho autocomplete ---------- */
+var NICHOS=['Saúde','Emagrecimento','Direito','Concurso público','Moda','Redes sociais',
+  'Tráfego pago','Marketing digital','Beleza','Estética','Nutrição','Psicologia',
+  'Relacionamento','Maternidade','Educação','Idiomas','Finanças','Investimentos',
+  'Empreendedorismo','Vendas','Carreira','Produtividade','Tecnologia',
+  'Inteligência artificial','Culinária','Artesanato','Fotografia','Turismo',
+  'Espiritualidade','Mercado pet','Veterinário'];
+var nichoSel=null,acHl=-1,acItems=[];
+function norm(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')}
+function acRender(list){
+  var ul=document.getElementById('nicho-list');
+  ul.innerHTML='';
+  if(!list.length){ul.innerHTML='<li class="ac-empty">Nenhum nicho encontrado</li>';acItems=[];return}
+  acItems=list;
+  list.forEach(function(item,i){
+    var q=norm(document.getElementById('f-nicho-q').value.trim());
+    var label=item;
+    if(q){var idx=norm(item).indexOf(q);
+      if(idx!==-1)label=item.slice(0,idx)+'<span class="ac-match">'+item.slice(idx,idx+q.length)+'</span>'+item.slice(idx+q.length);}
+    var li=document.createElement('li');li.setAttribute('role','option');
+    li.innerHTML=label;
+    if(item===nichoSel)li.classList.add('ac-sel');
+    li.addEventListener('mousedown',function(e){e.preventDefault();acSelect(item)});
+    ul.appendChild(li);
+  });
+  acHl=-1;
+}
+function acFilter(){
+  var q=norm(document.getElementById('f-nicho-q').value.trim());
+  var filtered=q?NICHOS.filter(function(n){return norm(n).indexOf(q)!==-1}):NICHOS.slice();
+  acRender(filtered);
+  document.getElementById('nicho-drop').classList.add('open');
+}
+function acOpen(){
+  var q=norm(document.getElementById('f-nicho-q').value.trim());
+  var filtered=q?NICHOS.filter(function(n){return norm(n).indexOf(q)!==-1}):NICHOS.slice();
+  acRender(filtered);
+  document.getElementById('nicho-drop').classList.add('open');
+}
+function acBlur(){setTimeout(function(){document.getElementById('nicho-drop').classList.remove('open');acHl=-1},150)}
+function acHighlight(i){
+  var lis=document.querySelectorAll('#nicho-list li:not(.ac-empty)');
+  lis.forEach(function(l){l.classList.remove('ac-hl')});
+  if(i>=0&&i<lis.length){lis[i].classList.add('ac-hl');lis[i].scrollIntoView({block:'nearest'})}
+}
+function acKey(e){
+  var lis=document.querySelectorAll('#nicho-list li:not(.ac-empty)');
+  if(e.key==='ArrowDown'){e.preventDefault();acHl=Math.min(acHl+1,lis.length-1);acHighlight(acHl)}
+  else if(e.key==='ArrowUp'){e.preventDefault();acHl=Math.max(acHl-1,0);acHighlight(acHl)}
+  else if(e.key==='Enter'){e.preventDefault();if(acHl>=0&&acItems[acHl])acSelect(acItems[acHl]);
+    else if(acItems.length===1)acSelect(acItems[0]);}
+  else if(e.key==='Escape'){document.getElementById('nicho-drop').classList.remove('open')}
+}
+function acSelect(val){
+  nichoSel=val;
+  document.getElementById('f-nicho-q').value='';
+  document.getElementById('nicho-drop').classList.remove('open');
+  var tag=document.getElementById('nicho-tag');
+  tag.innerHTML='<span class="ac-tag">'+val+'<button type="button" title="Remover" onclick="acRemove()">×</button></span>';
+}
+function acRemove(){nichoSel=null;document.getElementById('nicho-tag').innerHTML='';document.getElementById('f-nicho-q').value='';document.getElementById('f-nicho-q').focus()}
+function nichoVal(){return nichoSel||''}
+/* ---------- end nicho autocomplete ---------- */
 var temProd=true,traf='pago',res='',roda=true,ocu=null,dec=null,tempo=null,urg='';
 function show(id,on){document.getElementById(id).classList.toggle('hidden',!on)}
 function seg(id,on){document.getElementById(id).classList.toggle('on',on)}
@@ -365,7 +441,8 @@ function upd(){
 function linha(rot,id){var x=v(id);return x?rot+': '+x+'\n':''}
 function copiar(){
   var t='FICHA DE QUALIFICAÇÃO SDR\n\n';
-  t+=linha('Lead','f-nome')+linha('E-mail','f-email')+linha('Telefone','f-tel')+bloco('Nicho','c-nicho','f-nicho')+linha('Tempo no digital','f-tempo');
+  var nv=nichoVal();
+  t+=linha('Lead','f-nome')+linha('E-mail','f-email')+linha('Telefone','f-tel')+(nv?'Nicho: '+nv+'\n':'')+linha('Tempo no digital','f-tempo');
   t+=linha('Faixa etária','f-idade')+linha('Cidade/UF','f-cid')+linha('Onde conheceu','f-fonte')+linha('Acompanha há','f-segue');
   t+='\nCenário: '+(temProd?'Tem produto':'Não tem produto')+'\n';
   if(temProd){
@@ -408,6 +485,7 @@ function copiar(){
 function limpar(){
   if(!confirm('Limpar todos os campos?'))return;
   document.querySelectorAll('input,textarea,select').forEach(function(e){e.value=''});
+  acRemove();
   document.getElementById('f-out').style.display='none';
   res='';seg('b-qual',false);seg('b-desq',false);show('g-qual',false);show('g-desq',false);
   ocu=null;dec=null;tempo=null;urg='';

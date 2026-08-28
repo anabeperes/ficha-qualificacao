@@ -255,16 +255,13 @@
 
 <div class="sec star">
   <div class="h"><span class="n">★</span><p class="t">Investimento. A pergunta determinante</p></div>
-  <div class="script" id="s-inv">"Fulano, para chegar nesse resultado, quanto você estaria disposto a investir numa mentoria?"</div>
-  <label>Disposição de investimento</label>
-  <div class="chips" id="c-disp" role="group" aria-label="Disposição de investimento">
-    <button type="button" data-v="até R$ 1 mil" onclick="uni(this)">Até R$ 1 mil</button>
-    <button type="button" data-v="R$ 1 a 5 mil" onclick="uni(this)">R$ 1 a 5 mil</button>
-    <button type="button" data-v="R$ 5 a 20 mil" onclick="uni(this)">R$ 5 a 20 mil</button>
-    <button type="button" data-v="mais de R$ 20 mil" onclick="uni(this)">Mais de R$ 20 mil</button>
-    <button type="button" data-v="não disse" onclick="uni(this)">Não disse</button>
+  <label for="f-disp-q">Disposição de investimento</label>
+  <div id="disp-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px"></div>
+  <div class="ac-wrap" id="disp-ac">
+    <input id="f-disp-q" placeholder="Pesquisar…" autocomplete="off" oninput="dispFilter()" onfocus="dispOpen()" onblur="dispBlur()" onkeydown="dispKey(event)">
+    <div class="ac-drop" id="disp-drop" role="listbox"><ul id="disp-list"></ul></div>
   </div>
-  <input id="f-disp" placeholder="Valor exato que o lead falou">
+  <input id="f-disp" placeholder="Valor exato que o lead falou" style="margin-top:6px">
 </div>
 
 <div class="sec">
@@ -677,6 +674,63 @@ function cursosSelect(val){
 function cursosRemove(){cursosSel=null;var t=document.getElementById('cursos-tags');t.innerHTML='';t.style.display='none';document.getElementById('f-cursos-q').focus()}
 function cursosVal(){return cursosSel||''}
 /* ---------- end cursos/mentoria autocomplete ---------- */
+
+/* ---------- disposição investimento autocomplete (single) ---------- */
+var DISP=['Até R$ 1 mil','R$ 1 a 5 mil','R$ 5 a 20 mil','Mais de R$ 20 mil','Não disse'];
+var dispSel=null,dispHl=-1,dispItems=[];
+function dispRender(list){
+  var ul=document.getElementById('disp-list');
+  ul.innerHTML='';
+  if(!list.length){ul.innerHTML='<li class="ac-empty">Nenhuma opção encontrada</li>';dispItems=[];return}
+  dispItems=list;
+  list.forEach(function(item){
+    var q=norm(document.getElementById('f-disp-q').value.trim());
+    var label=item;
+    if(q){var idx=norm(item).indexOf(q);
+      if(idx!==-1)label=item.slice(0,idx)+'<span class="ac-match">'+item.slice(idx,idx+q.length)+'</span>'+item.slice(idx+q.length);}
+    var li=document.createElement('li');li.setAttribute('role','option');
+    li.innerHTML=label;
+    if(item===dispSel)li.classList.add('ac-sel');
+    li.addEventListener('mousedown',function(e){e.preventDefault();dispSelect(item)});
+    ul.appendChild(li);
+  });
+  dispHl=-1;
+}
+function dispFilter(){
+  var q=norm(document.getElementById('f-disp-q').value.trim());
+  var filtered=q?DISP.filter(function(n){return norm(n).indexOf(q)!==-1}):DISP.slice();
+  dispRender(filtered);document.getElementById('disp-drop').classList.add('open');
+}
+function dispOpen(){
+  var q=norm(document.getElementById('f-disp-q').value.trim());
+  var filtered=q?DISP.filter(function(n){return norm(n).indexOf(q)!==-1}):DISP.slice();
+  dispRender(filtered);document.getElementById('disp-drop').classList.add('open');
+}
+function dispBlur(){setTimeout(function(){document.getElementById('disp-drop').classList.remove('open');dispHl=-1},150)}
+function dispHighlight(i){
+  var lis=document.querySelectorAll('#disp-list li:not(.ac-empty)');
+  lis.forEach(function(l){l.classList.remove('ac-hl')});
+  if(i>=0&&i<lis.length){lis[i].classList.add('ac-hl');lis[i].scrollIntoView({block:'nearest'})}
+}
+function dispKey(e){
+  var lis=document.querySelectorAll('#disp-list li:not(.ac-empty)');
+  if(e.key==='ArrowDown'){e.preventDefault();dispHl=Math.min(dispHl+1,lis.length-1);dispHighlight(dispHl)}
+  else if(e.key==='ArrowUp'){e.preventDefault();dispHl=Math.max(dispHl-1,0);dispHighlight(dispHl)}
+  else if(e.key==='Enter'){e.preventDefault();if(dispHl>=0&&dispItems[dispHl])dispSelect(dispItems[dispHl]);
+    else if(dispItems.length===1)dispSelect(dispItems[0]);}
+  else if(e.key==='Escape'){document.getElementById('disp-drop').classList.remove('open')}
+}
+function dispSelect(val){
+  dispSel=val;
+  document.getElementById('f-disp-q').value='';
+  document.getElementById('disp-drop').classList.remove('open');
+  var tag=document.getElementById('disp-tags');
+  tag.innerHTML='<span class="ac-tag">'+val+'<button type="button" title="Remover" onclick="dispRemove()">×</button></span>';
+  tag.style.display='flex';
+}
+function dispRemove(){dispSel=null;var t=document.getElementById('disp-tags');t.innerHTML='';t.style.display='none';document.getElementById('f-disp-q').focus()}
+function dispVal(){return dispSel||''}
+/* ---------- end disposição investimento autocomplete ---------- */
 var temProd=true,traf='pago',res='',roda=true,ocu=null,dec=null,tempo=null,urg='';
 function show(id,on){document.getElementById(id).classList.toggle('hidden',!on)}
 function seg(id,on){document.getElementById(id).classList.toggle('on',on)}
@@ -698,7 +752,6 @@ function setRes(r){res=r;seg('b-qual',r==='q');seg('b-desq',r==='d');show('g-qua
 function v(id){var e=document.getElementById(id);return e?e.value.trim():''}
 function upd(){
   var n=v('f-nome')||'Fulano',m=v('f-meta');
-  document.getElementById('s-inv').textContent='”'+n+', para chegar '+(m?'em '+m:'nesse resultado')+', quanto você estaria disposto a investir numa mentoria?”';
 }
 ['f-nome','f-meta'].forEach(function(i){document.getElementById(i).addEventListener('input',upd)});
 function linha(rot,id){var x=v(id);return x?rot+': '+x+'\n':''}
@@ -728,7 +781,8 @@ function copiar(){
   var cv=cursosVal();
   t+='\n'+(iv?'Impeditivo: '+iv+'\n':'')+linha('  Nas palavras dele','f-imp')+(tv?'Já tentou resolver: '+tv+'\n':'')+linha('  Detalhe','f-tent')+(cv?'Já investiu em curso/mentoria: '+cv+'\n':'')+linha('  Com quem / experiência','f-cursos');
   t+='\n'+linha('Meta','f-meta')+linha('Prazo','f-prazo');
-  t+=bloco('Disposição de investimento','c-disp','f-disp');
+  var dv=dispVal();
+  t+=(dv?'Disposição de investimento: '+dv+'\n':'')+linha('  Valor exato','f-disp');
   var sin='';
   if(dec!==null)sin+='Decisão: '+(dec?('compartilhada'+(marc('c-dec')?' ('+marc('c-dec')+')':'')):'decide sozinho')+'\n';
   sin+=linha('  Quem','f-dec-obs');
@@ -757,6 +811,7 @@ function limpar(){
   impSel=[];impRenderTags();document.getElementById('f-imp-q').value='';
   tentSel=[];tentRenderTags();document.getElementById('f-tent-q').value='';
   cursosRemove();
+  dispRemove();
   document.getElementById('f-out').style.display='none';
   res='';seg('b-qual',false);seg('b-desq',false);show('g-qual',false);show('g-desq',false);
   ocu=null;dec=null;tempo=null;urg='';

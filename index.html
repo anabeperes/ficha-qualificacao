@@ -79,14 +79,7 @@
   .actions .primary:hover{background:#D8D7D1}
   #f-out{display:none;min-height:160px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;margin-top:4px}
   .hidden{display:none}
-  /* ---- AI settings ---- */
-  .ai-cfg{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin:0 0 12px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
-  .ai-cfg label{font-size:12px;color:var(--muted);margin:0 0 3px;display:block}
-  .ai-cfg input{font:inherit;font-size:13px;color:var(--text);background:var(--field);border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px;width:100%}
-  .ai-cfg input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
-  .ai-cfg select{font:inherit;font-size:13px;color:var(--text);background:var(--field);border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px}
-  .ai-cfg .g1{flex:1;min-width:200px}
-  .ai-cfg .g2{flex-shrink:0}
+  /* ---- AI settings (hidden — key lives server-side) ---- */
   .actions .ai-btn{flex:1;background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border);font-weight:600}
   .actions .ai-btn:hover{background:#1e3650}
   .actions .ai-btn:disabled{opacity:0.55;cursor:not-allowed}
@@ -104,21 +97,6 @@
 </head>
 <body>
 <div class="wrap">
-
-<div class="ai-cfg">
-  <div class="g1">
-    <label for="ai-key">🔑 API Key Anthropic</label>
-    <input id="ai-key" type="password" placeholder="sk-ant-…" autocomplete="off" oninput="saveKey()" value="">
-  </div>
-  <div class="g2">
-    <label for="ai-model">Modelo</label>
-    <select id="ai-model" onchange="saveKey()">
-      <option value="claude-haiku-4-5">Haiku 4.5 — rápido / barato (teste)</option>
-      <option value="claude-sonnet-4-6" selected>Sonnet 4.6 — qualidade</option>
-      <option value="claude-opus-5">Opus 5 — máximo</option>
-    </select>
-  </div>
-</div>
 
 <header>
   <h1>Ficha de qualificação SDR</h1>
@@ -860,18 +838,7 @@ function limpar(){
 }
 setCen(temProd);setTraf(traf);setRoda(roda);upd();
 
-/* ---- API Key persistence ---- */
-(function(){
-  var k=localStorage.getItem('ai_key')||'';
-  var m=localStorage.getItem('ai_model')||'claude-sonnet-4-6';
-  if(k)document.getElementById('ai-key').value=k;
-  var sel=document.getElementById('ai-model');
-  for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===m)sel.selectedIndex=i;}
-})();
-function saveKey(){
-  localStorage.setItem('ai_key',document.getElementById('ai-key').value.trim());
-  localStorage.setItem('ai_model',document.getElementById('ai-model').value);
-}
+/* ---- API Key lives server-side — nothing to restore ---- */
 
 /* ---- Simple markdown → HTML ---- */
 function inlineFmt(t){
@@ -1063,34 +1030,23 @@ implementar".
 - Argumentos sempre em tom neutro adaptável: sem o nome do lead, sem "você" — o closer coloca a própria voz. As palavras do lead aparecem só no rótulo "Situação identificada", entre aspas.
 - Resposta de no máximo ~1 página. Se a ficha levantar mais de 4 situações, escolha as mais fortes e agrupe as demais em uma linha.`;
 
-/* ---- Gerar Briefing via API ---- */
+/* ---- Gerar Briefing via rota interna ---- */
 async function gerarBriefing(){
-  var key=document.getElementById('ai-key').value.trim();
-  if(!key){
-    showErr('Insira sua API Key Anthropic no campo acima antes de gerar.');
-    return;
-  }
   var formText=buildFormText();
   if(formText.trim()==='FICHA DE QUALIFICAÇÃO SDR'){
     showErr('Preencha pelo menos alguns campos da ficha antes de gerar.');
     return;
   }
   var btn=document.getElementById('btn-gerar');
-  var model=document.getElementById('ai-model').value||'claude-sonnet-4-6';
   btn.disabled=true;btn.textContent='⏳ Gerando…';
   clearErr();
   document.getElementById('briefing-result').style.display='none';
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+    var resp=await fetch('/api/briefing',{
       method:'POST',
-      headers:{
-        'x-api-key':key,
-        'anthropic-version':'2023-06-01',
-        'content-type':'application/json',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
+      headers:{'content-type':'application/json'},
       body:JSON.stringify({
-        model:model,
+        model:'claude-sonnet-4-6',
         max_tokens:2048,
         system:BRIEFING_SYSTEM,
         messages:[{role:'user',content:formText}]
@@ -1107,7 +1063,7 @@ async function gerarBriefing(){
     rd.style.display='block';
     rd.scrollIntoView({behavior:'smooth',block:'start'});
   }catch(e){
-    showErr('Erro na API: '+e.message);
+    showErr('Erro ao gerar briefing: '+e.message);
   }finally{
     btn.disabled=false;btn.textContent='⚡ Gerar Briefing com IA';
   }

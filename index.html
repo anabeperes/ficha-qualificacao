@@ -205,13 +205,11 @@
 <div class="sec">
   <div class="h"><span class="n">4</span><p class="t">Motivação</p></div>
   <p class="hint">✍ Anote as palavras exatas do lead. O closer vai usar na venda.</p>
-  <label>O que te motivou a buscar isso?</label>
-  <div class="chips" id="c-mot" role="group" aria-label="Motivação">
-    <button type="button" data-v="sair do emprego" onclick="tog(this)">Sair do emprego</button>
-    <button type="button" data-v="aumentar a renda" onclick="tog(this)">Aumentar a renda</button>
-    <button type="button" data-v="tempo com a família" onclick="tog(this)">Tempo com a família</button>
-    <button type="button" data-v="quitar dívidas" onclick="tog(this)">Quitar dívidas</button>
-    <button type="button" data-v="viver do que gosta" onclick="tog(this)">Viver do que gosta</button>
+  <label for="f-mot-q">O que te motivou a buscar isso?</label>
+  <div id="mot-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px"></div>
+  <div class="ac-wrap" id="mot-ac">
+    <input id="f-mot-q" placeholder="Pesquisar motivação…" autocomplete="off" oninput="motFilter()" onfocus="motOpen()" onblur="motBlur()" onkeydown="motKey(event)">
+    <div class="ac-drop" id="mot-drop" role="listbox"><ul id="mot-list"></ul></div>
   </div>
   <label for="f-mot">Nas palavras dele</label>
   <textarea id="f-mot" placeholder="Ex.: dar uma vida melhor pros meus filhos"></textarea>
@@ -409,6 +407,83 @@ function acSelect(val){
 function acRemove(){nichoSel=null;document.getElementById('nicho-tag').innerHTML='';document.getElementById('f-nicho-q').value='';document.getElementById('f-nicho-q').focus()}
 function nichoVal(){return nichoSel||''}
 /* ---------- end nicho autocomplete ---------- */
+
+/* ---------- motivação autocomplete (multi) ---------- */
+var MOTIVACOES=['Sair do emprego','Aumentar a renda','Tempo com a família','Quitar dívidas','Viver do que gosta',
+  'Ter liberdade financeira','Trabalhar de qualquer lugar','Ter mais autonomia',
+  'Transformar conhecimento em renda','Monetizar uma audiência','Ter uma renda extra',
+  'Conquistar estabilidade financeira','Sair de uma profissão desgastante',
+  'Ter horários flexíveis','Buscar independência','Realizar um sonho pessoal',
+  'Recomeçar profissionalmente'];
+var motSel=[],motHl=-1,motItems=[];
+function motRender(list){
+  var ul=document.getElementById('mot-list');
+  ul.innerHTML='';
+  if(!list.length){ul.innerHTML='<li class="ac-empty">Nenhuma motivação encontrada</li>';motItems=[];return}
+  motItems=list;
+  list.forEach(function(item,i){
+    var q=norm(document.getElementById('f-mot-q').value.trim());
+    var label=item;
+    if(q){var idx=norm(item).indexOf(q);
+      if(idx!==-1)label=item.slice(0,idx)+'<span class="ac-match">'+item.slice(idx,idx+q.length)+'</span>'+item.slice(idx+q.length);}
+    var li=document.createElement('li');li.setAttribute('role','option');
+    li.innerHTML=label;
+    if(motSel.indexOf(item)!==-1)li.classList.add('ac-sel');
+    li.addEventListener('mousedown',function(e){e.preventDefault();motToggle(item)});
+    ul.appendChild(li);
+  });
+  motHl=-1;
+}
+function motFilter(){
+  var q=norm(document.getElementById('f-mot-q').value.trim());
+  var filtered=q?MOTIVACOES.filter(function(n){return norm(n).indexOf(q)!==-1}):MOTIVACOES.slice();
+  motRender(filtered);
+  document.getElementById('mot-drop').classList.add('open');
+}
+function motOpen(){
+  var q=norm(document.getElementById('f-mot-q').value.trim());
+  var filtered=q?MOTIVACOES.filter(function(n){return norm(n).indexOf(q)!==-1}):MOTIVACOES.slice();
+  motRender(filtered);
+  document.getElementById('mot-drop').classList.add('open');
+}
+function motBlur(){setTimeout(function(){document.getElementById('mot-drop').classList.remove('open');motHl=-1},150)}
+function motHighlight(i){
+  var lis=document.querySelectorAll('#mot-list li:not(.ac-empty)');
+  lis.forEach(function(l){l.classList.remove('ac-hl')});
+  if(i>=0&&i<lis.length){lis[i].classList.add('ac-hl');lis[i].scrollIntoView({block:'nearest'})}
+}
+function motKey(e){
+  var lis=document.querySelectorAll('#mot-list li:not(.ac-empty)');
+  if(e.key==='ArrowDown'){e.preventDefault();motHl=Math.min(motHl+1,lis.length-1);motHighlight(motHl)}
+  else if(e.key==='ArrowUp'){e.preventDefault();motHl=Math.max(motHl-1,0);motHighlight(motHl)}
+  else if(e.key==='Enter'){e.preventDefault();if(motHl>=0&&motItems[motHl])motToggle(motItems[motHl]);
+    else if(motItems.length===1)motToggle(motItems[0]);}
+  else if(e.key==='Escape'){document.getElementById('mot-drop').classList.remove('open')}
+}
+function motToggle(val){
+  var idx=motSel.indexOf(val);
+  if(idx===-1)motSel.push(val); else motSel.splice(idx,1);
+  document.getElementById('f-mot-q').value='';
+  motRenderTags();
+  motOpen();
+}
+function motRemove(val){
+  var idx=motSel.indexOf(val);
+  if(idx!==-1)motSel.splice(idx,1);
+  motRenderTags();
+}
+function motRenderTags(){
+  var c=document.getElementById('mot-tags');
+  c.innerHTML='';
+  motSel.forEach(function(v){
+    var s=document.createElement('span');s.className='ac-tag';
+    s.innerHTML=v+'<button type="button" title="Remover" onclick="motRemove(\''+v.replace(/'/g,"\\'")+'\')">\u00d7</button>';
+    c.appendChild(s);
+  });
+  c.style.display=motSel.length?'flex':'none';
+}
+function motVal(){return motSel.join(', ')}
+/* ---------- end motivação autocomplete ---------- */
 var temProd=true,traf='pago',res='',roda=true,ocu=null,dec=null,tempo=null,urg='';
 function show(id,on){document.getElementById(id).classList.toggle('hidden',!on)}
 function seg(id,on){document.getElementById(id).classList.toggle('on',on)}
@@ -453,7 +528,8 @@ function copiar(){
   } else {
     t+=linha('Ideia de produto','f-ideia')+linha('Público ideal','f-pub')+linha('Audiência','f-aud')+linha('Já vendeu/testou','f-val')+linha('Ocupação/renda','f-renda')+linha('Experiência tráfego/vendas','f-exp');
   }
-  t+='\n'+(marc('c-mot')?'Motivação: '+marc('c-mot')+'\n':'')+linha('  Nas palavras dele','f-mot');
+  var mv=motVal();
+  t+='\n'+(mv?'Motivação: '+mv+'\n':'')+linha('  Nas palavras dele','f-mot');
   t+='\n'+(marc('c-imp')?'Impeditivo: '+marc('c-imp')+'\n':'')+linha('  Nas palavras dele','f-imp')+bloco('Já tentou resolver','c-tent','f-tent')+bloco('Já investiu em curso/mentoria','c-cursos','f-cursos');
   t+='\n'+linha('Meta','f-meta')+linha('Prazo','f-prazo');
   t+=bloco('Disposição de investimento','c-disp','f-disp');
@@ -481,6 +557,7 @@ function limpar(){
   if(!confirm('Limpar todos os campos?'))return;
   document.querySelectorAll('input,textarea,select').forEach(function(e){e.value=''});
   acRemove();
+  motSel=[];motRenderTags();document.getElementById('f-mot-q').value='';
   document.getElementById('f-out').style.display='none';
   res='';seg('b-qual',false);seg('b-desq',false);show('g-qual',false);show('g-desq',false);
   ocu=null;dec=null;tempo=null;urg='';

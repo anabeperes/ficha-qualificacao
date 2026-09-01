@@ -766,56 +766,11 @@ function setUrg(u){urg=u;seg('b-urg-ja',u==='ja');segb('b-urg-dep',u==='dep');sh
 function setTraf(t){traf=t;seg('b-pago',t!=='org');seg('b-org',t!=='pago');seg('b-ambos',t==='ambos');show('g-pago',t!=='org');show('g-org',t!=='pago')}
 function setRes(r){res=r;seg('b-qual',r==='q');seg('b-desq',r==='d');show('g-qual',r==='q');show('g-desq',r==='d')}
 function v(id){var e=document.getElementById(id);return e?e.value.trim():''}
-function upd(){
-  var n=v('f-nome')||'Fulano',m=v('f-meta');
-}
-['f-nome','f-meta'].forEach(function(i){document.getElementById(i).addEventListener('input',upd)});
 function linha(rot,id){var x=v(id);return x?rot+': '+x+'\n':''}
 function copiar(){
-  var t='FICHA DE QUALIFICAÇÃO SDR\n\n';
-  var nv=nichoVal();
-  t+=linha('Lead','f-nome')+linha('E-mail','f-email')+linha('Telefone','f-tel')+(nv?'Nicho: '+nv+'\n':'')+linha('Tempo no digital','f-tempo');
-  t+=linha('Faixa etária','f-idade')+linha('Cidade/UF','f-cid')+linha('Onde conheceu','f-fonte')+linha('Acompanha há','f-segue');
-  t+='\nCenário: '+(temProd?'Tem produto':'Não tem produto')+'\n';
-  if(temProd){
-    t+=linha('Produto','f-prod');
-    t+='Status do produto: '+(roda?'Rodando':'Parado')+'\n';
-    t+=linha('Preço','f-preco')+linha('Faturamento/mês','f-fat')+bloco('Como vende','c-como','f-como')+linha('Página de vendas','f-pv');
-    t+='Tráfego: '+(traf==='ambos'?'Pago + orgânico':traf==='pago'?'Pago':'Orgânico')+'\n';
-    if(traf!=='org')t+=bloco('  Plataforma','c-plat','f-plat')+linha('  Investimento/mês','f-inv-traf')+linha('  Custo por resultado','f-cpr')+linha('  CTR','f-ctr');
-    if(traf!=='pago')t+=linha('  Canal principal','f-canal');
-    t+=linha('  Visitas na página','f-visitas')+linha('  Checkouts iniciados','f-checkouts')+linha('  Compras','f-compras');
-    if(ocu!==null)t+='Outra ocupação: '+(ocu?(v('f-ocu')||'sim'):'não, vive só disso')+'\n';
-    t+=linha('Equipe','f-equipe');
-  } else {
-    t+=linha('Ideia de produto','f-ideia')+linha('Público ideal','f-pub')+linha('Audiência','f-aud')+linha('Já vendeu/testou','f-val')+linha('Ocupação/renda','f-renda')+linha('Experiência tráfego/vendas','f-exp');
-  }
-  var mv=motVal();
-  t+='\n'+(mv?'Motivação: '+mv+'\n':'')+linha('  Nas palavras dele','f-mot');
-  var iv=impVal();
-  var tv=tentVal();
-  var cv=cursosVal();
-  t+='\n'+(iv?'Impeditivo: '+iv+'\n':'')+linha('  Nas palavras dele','f-imp')+(tv?'Já tentou resolver: '+tv+'\n':'')+linha('  Detalhe','f-tent')+(cv?'Já investiu em curso/mentoria: '+cv+'\n':'')+linha('  Com quem / experiência','f-cursos');
-  t+='\n'+linha('Meta','f-meta')+linha('Prazo','f-prazo');
-  var dv=dispVal();
-  t+=(dv?'Disposição de investimento: '+dv+'\n':'')+linha('  Valor exato','f-disp');
-  var sin='';
-  if(dec!==null)sin+='Decisão: '+(dec?('compartilhada'+(marc('c-dec')?' ('+marc('c-dec')+')':'')):'decide sozinho')+'\n';
-  sin+=linha('  Quem','f-dec-obs');
-  if(tempo!==null)sin+='Tempo: '+(tempo?'tem':'não tem')+(v('f-tempo-sem')?', '+v('f-tempo-sem'):'')+'\n';
-  else sin+=linha('Tempo','f-tempo-sem');
-  if(urg)sin+='Urgência: '+(urg==='ja'?'quer começar agora':'quer começar depois')+(v('f-urg-q')?', '+v('f-urg-q'):'')+'\n';
-  sin+=linha('Outros sinais','f-flags');
-  if(sin)t+='\nDECISÃO, TEMPO E URGÊNCIA\n'+sin;
-  var fl=[];
-  if(dec===true)fl.push('decisão compartilhada'+(marc('c-dec')?' ('+marc('c-dec')+')':''));
-  if(tempo===false)fl.push('sem tempo para executar');
-  if(urg==='dep')fl.push('não quer começar agora');
-  if(fl.length)t+='\nRED FLAGS: '+fl.join('; ')+'\n';
-  if(res)t+='\nResultado: '+(res==='q'?'QUALIFICADO, call: '+(v('f-agenda')||'a agendar'):'DESQUALIFICADO, curso: '+(v('f-curso')||'...'))+'\n';
-  t+=linha('Obs. para o closer','f-obs');
+  var t=buildFormText();
   var o=document.getElementById('f-out');o.style.display='block';o.value=t;
-  var ok=function(){var l=document.getElementById('cp-lbl');l.textContent='Copiado ✓';setTimeout(function(){l.textContent='Copiar como texto'},1600)};
+  var ok=function(){var l=document.getElementById('cp-lbl');l.textContent='Copiado ✓';setTimeout(function(){l.textContent='Copiar texto'},1600)};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,function(){o.select()})}
   else{o.select();try{document.execCommand('copy');ok()}catch(e){}}
 }
@@ -834,14 +789,14 @@ function limpar(){
   ['b-ocu-sim','b-ocu-nao','b-dec-sim','b-dec-nao','b-tp-sim','b-tp-nao','b-urg-ja','b-urg-dep'].forEach(function(i){
     document.getElementById(i).classList.remove('on','bad')});
   document.querySelectorAll('.chips button').forEach(function(b){b.classList.remove('on')});
-  show('g-ocu',false);show('g-dec',false);show('g-urg',false);setRoda(true);upd();
+  show('g-ocu',false);show('g-dec',false);show('g-urg',false);setRoda(true);
   setCen(true);setTraf('pago');
   var rb=document.getElementById('briefing-result');
   rb.style.display='none';rb.innerHTML='';rb.removeAttribute('data-raw');
   clearErr();
   try{localStorage.removeItem(LS_KEY)}catch(e){}
 }
-setCen(temProd);setTraf(traf);setRoda(roda);upd();
+setCen(temProd);setTraf(traf);setRoda(roda);
 
 /* ---- API Key lives server-side — nothing to restore ---- */
 
@@ -852,6 +807,7 @@ function inlineFmt(t){
     .replace(/\*([^*]+)\*/g,'<em>$1</em>');
 }
 function mdToHtml(md){
+  md=md.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   var lines=md.split('\n');
   var out='';var inUl=false;
   for(var i=0;i<lines.length;i++){

@@ -835,6 +835,11 @@ function limpar(){
     document.getElementById(i).classList.remove('on','bad')});
   document.querySelectorAll('.chips button').forEach(function(b){b.classList.remove('on')});
   show('g-ocu',false);show('g-dec',false);show('g-urg',false);setRoda(true);upd();
+  setCen(true);setTraf('pago');
+  var rb=document.getElementById('briefing-result');
+  rb.style.display='none';rb.innerHTML='';rb.removeAttribute('data-raw');
+  clearErr();
+  try{localStorage.removeItem(LS_KEY)}catch(e){}
 }
 setCen(temProd);setTraf(traf);setRoda(roda);upd();
 
@@ -965,6 +970,63 @@ function showErr(msg){
   document.getElementById('btn-gerar').insertAdjacentElement('afterend',d);
 }
 function clearErr(){var e=document.getElementById('ai-err');if(e)e.remove();}
+
+/* ---- Autosave: a ficha sobrevive a refresh/fechamento acidental ---- */
+var LS_KEY='ficha-sdr-v1';
+function collectState(){
+  var vals={};
+  document.querySelectorAll('input,textarea,select').forEach(function(e){
+    if(e.id&&e.id!=='f-out')vals[e.id]=e.value;
+  });
+  var chips={};
+  ['c-como','c-plat','c-dec'].forEach(function(id){
+    chips[id]=Array.prototype.slice.call(document.querySelectorAll('#'+id+' button.on'))
+      .map(function(b){return b.getAttribute('data-v')});
+  });
+  return {vals:vals,chips:chips,nichoSel:nichoSel,motSel:motSel,impSel:impSel,
+    tentSel:tentSel,cursosSel:cursosSel,dispSel:dispSel,
+    temProd:temProd,traf:traf,roda:roda,ocu:ocu,dec:dec,tempo:tempo,urg:urg,res:res};
+}
+var saveT=null;
+function saveState(){
+  clearTimeout(saveT);
+  saveT=setTimeout(function(){
+    try{localStorage.setItem(LS_KEY,JSON.stringify(collectState()))}catch(e){}
+  },300);
+}
+function restoreState(){
+  var raw=null;
+  try{raw=localStorage.getItem(LS_KEY)}catch(e){}
+  if(!raw)return;
+  var s;try{s=JSON.parse(raw)}catch(e){return}
+  if(!s)return;
+  Object.keys(s.vals||{}).forEach(function(id){
+    var e=document.getElementById(id);if(e)e.value=s.vals[id];
+  });
+  Object.keys(s.chips||{}).forEach(function(id){
+    (s.chips[id]||[]).forEach(function(vv){
+      var b=document.querySelector('#'+id+' button[data-v="'+vv+'"]');
+      if(b)b.classList.add('on');
+    });
+  });
+  if(s.nichoSel)acSelect(s.nichoSel);
+  motSel=s.motSel||[];motRenderTags();
+  impSel=s.impSel||[];impRenderTags();
+  tentSel=s.tentSel||[];tentRenderTags();
+  if(s.cursosSel)cursosSelect(s.cursosSel);
+  if(s.dispSel)dispSelect(s.dispSel);
+  setCen(s.temProd!==false);
+  setTraf(s.traf||'pago');
+  setRoda(s.roda!==false);
+  if(typeof s.ocu==='boolean')setOcu(s.ocu);
+  if(typeof s.dec==='boolean')setDec(s.dec);
+  if(typeof s.tempo==='boolean')setTempo(s.tempo);
+  if(s.urg)setUrg(s.urg);
+  if(s.res)setRes(s.res);
+}
+document.addEventListener('input',saveState);
+document.addEventListener('click',saveState);
+restoreState();
 </script>
 </body>
 </html>

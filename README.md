@@ -2,15 +2,24 @@
 
 Formulário usado pelo SDR durante a call de qualificação da **Mentoria Fluxo**.
 
-O SDR preenche enquanto conversa com o lead e, no fim, clica em **Copiar como texto**
-para gerar um resumo formatado que é repassado ao closer.
+O SDR preenche enquanto conversa com o lead e, no fim, pode:
+
+- clicar em **Copiar texto** para gerar um resumo formatado que é repassado ao closer;
+- clicar em **⚡ Gerar Briefing com IA** para o agente transformar a ficha num
+  briefing de pré-call (leitura do lead, red flags, blocos de objeção → entrega,
+  esteira de produtos e o que faltou perguntar).
 
 ## Estrutura
 
-Página estática de arquivo único — `index.html`, com HTML, CSS e JS embutidos.
-Sem build, sem dependências, sem framework.
+- `index.html` — página única com HTML, CSS e JS embutidos. Sem build, sem framework.
+- `api/briefing.js` — função serverless (Vercel) que recebe o texto da ficha,
+  monta a chamada ao Gemini e devolve o briefing. **O prompt do agente
+  (`BRIEFING_SYSTEM`) vive aqui**, no servidor — inclui o formato de saída, as
+  16 entregas da mentoria, o catálogo condensado das 260 aulas do VTSD, a régua
+  de diagnóstico de métricas (CTR, connect rate, checkouts, compras, CPA × ticket)
+  e as regras de escopo. Para ajustar o comportamento do agente, edite esse arquivo.
 
-O roteiro segue a ordem:
+O roteiro do formulário segue a ordem:
 situação → motivação → impeditivo → objetivo → investimento → resultado.
 
 Blocos condicionais:
@@ -30,9 +39,24 @@ As respostas preocupantes acendem em vermelho na tela, e o texto copiado
 ganha uma linha `RED FLAGS:` resumindo só o que foi sinalizado — para o closer
 bater o olho e já entrar na call sabendo.
 
-Dois trechos de script se reescrevem sozinhos conforme os campos são preenchidos
-(a pergunta de aprofundamento da motivação e a pergunta de investimento, que usa
-o nome do lead e a meta informada).
+## Autosave
+
+A ficha é salva automaticamente no `localStorage` do navegador a cada
+digitação e restaurada ao reabrir a página — um refresh no meio da call não
+perde o preenchimento. O botão **Limpar** zera os campos, o briefing gerado
+e o estado salvo.
+
+## Briefing com IA
+
+O botão de briefing chama `POST /api/briefing` enviando só o texto da ficha.
+A função serverless:
+
+- usa o modelo `gemini-3.6-flash` com o prompt fixo do servidor
+  (`temperature` 0.3, `maxOutputTokens` 4096);
+- exige a variável de ambiente **`GEMINI_API_KEY`** configurada no projeto da
+  Vercel (Settings → Environment Variables);
+- só aceita chamadas cuja origem seja o próprio site (checagem de `Origin`
+  contra o host) e fichas de até 20 mil caracteres.
 
 ## Tema
 
@@ -44,9 +68,12 @@ de rolagem nativos acompanharem o tema.
 
 Publicado na Vercel em **ficha-qualificacao.vercel.app**.
 
-Como é um arquivo estático, não há comando de build: a Vercel serve o `index.html`
-direto da raiz. Todo push nesta branch dispara um deploy novo.
+Não há comando de build: a Vercel serve o `index.html` da raiz e compila a
+função de `api/`. Todo push na branch principal dispara um deploy novo.
 
 ## Rodar local
 
-Abra o `index.html` no navegador. É só isso.
+Abrir o `index.html` direto no navegador mostra o formulário e o copiar/colar
+funciona normalmente — mas o botão de briefing depende da rota `/api/briefing`,
+que só existe servida pela Vercel. Para testar o briefing localmente, use
+`vercel dev` com a `GEMINI_API_KEY` no ambiente.
